@@ -41,12 +41,16 @@ public class ElectrocardiogramView extends View {
 
     private int mEveryNPoint = 1;
     private int mEveryNPointBold = 1;
+    //设置为false后不会重新生成背景
+    private Boolean mBFlag = true;
 
     private Context mContext;
     private DisplayMetrics dm;
 
 
     private List<Map<String, Float>> mListPoint = new ArrayList<Map<String, Float>>();
+    private List<Float> mListVLine = new ArrayList();
+    private List<Float> mListHLine = new ArrayList();
 
     Paint mPaint = new Paint();
 
@@ -85,8 +89,8 @@ public class ElectrocardiogramView extends View {
             mCorrectionPointNumber = mPointMaxAmount / mErrorWidth;
         }
 
-        Log.i("getWidth :", "" + getWidth());
-        Log.i("getRealWidth :", "" + relWidth);
+//        Log.i("getWidth :", "" + getWidth());
+//        Log.i("getRealWidth :", "" + relWidth);
 
         drawBackground(canvas);
         drawWave(canvas);
@@ -97,14 +101,58 @@ public class ElectrocardiogramView extends View {
     public void drawBackground(Canvas canvas) {
 
         int num = mPointMaxAmount/mEveryNPoint;
+
+        if (mBFlag) {
+            float curX = 0;
+            for (int i = 0; i < mPointMaxAmount; i++) {
+                mListVLine.add(curX);
+                if (mCorrectionPointNumber!=0 && i%mCorrectionPointNumber == 0) {
+                    curX++;
+                }
+                curX += mXUnitLength;
+            }
+
+            float curY = 0;
+            while (curY < getHeight()) {
+                mListHLine.add(curY);
+                curY += mXUnitLength;
+            }
+            mBFlag = false;
+        }
+
         Paint paint = new Paint();
         paint.setColor(Color.GREEN);
+        paint.setStrokeWidth(1);
         paint.setAntiAlias(true);
-        for (int i = 0; i < mListPoint.size(); i++) {
-            if (i%mEveryNPoint == 0){
-                canvas.drawLine(mListPoint.get(i).get(X_KEY), 0, mListPoint.get(i).get(X_KEY), getHeight(), paint);
+        for (int i = 0; i < mListVLine.size(); i++) {
+            if (i == 0) {
+                paint.setStrokeWidth(8);
+                canvas.drawLine(mListVLine.get(i), 0, mListVLine.get(i), getHeight(), paint);
+                paint.setStrokeWidth(1);
+            } else if (i%mEveryNPoint == 0){
+                if (i%mEveryNPointBold == 0) {
+                    paint.setStrokeWidth(3);
+                    canvas.drawLine(mListVLine.get(i), 0, mListVLine.get(i), getHeight(), paint);
+                    paint.setStrokeWidth(1);
+                } else {
+                    canvas.drawLine(mListVLine.get(i), 0, mListVLine.get(i), getHeight(), paint);
+                }
             }
         }
+
+        for (int i = 0; i < mListHLine.size(); i++) {
+            if (i%mEveryNPoint == 0){
+                if (i%mEveryNPointBold == 0) {
+                    paint.setStrokeWidth(3);
+                    canvas.drawLine(0,  mListHLine.get(i), getWidth(), mListHLine.get(i), paint);
+                    paint.setStrokeWidth(1);
+                } else {
+                    canvas.drawLine(0, mListHLine.get(i), getWidth(), mListHLine.get(i), paint);
+                }
+            }
+        }
+
+
 
     }
 
@@ -137,7 +185,7 @@ public class ElectrocardiogramView extends View {
             mCurX++;
         }
         mCurX += mXUnitLength;
-        Log.d("mXUnitLength", mXUnitLength + "");
+//        Log.d("mXUnitLength", mXUnitLength + "");
         mCurY = curY;
         temp.put(Y_KEY, curY);
         //判断当前点是否大于最大点数
@@ -156,7 +204,7 @@ public class ElectrocardiogramView extends View {
             mCurX = 0;
         }
 
-        Log.d("mListPoint", mListPoint.toString());
+//        Log.d("mListPoint", mListPoint.toString());
         invalidate();
     }
 
@@ -191,6 +239,7 @@ public class ElectrocardiogramView extends View {
         }
         mEveryNPoint = everyNPoint;
         mEveryNPointBold = everyNPointBold;
+
     }
 
 }

@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
         mElectrocardiogram.setMaxPointAmount(260);
         mElectrocardiogram.setRemovedPointNum(10);
-        mElectrocardiogram.setEveryNPoint(10,100);
+        mElectrocardiogram.setEveryNPoint(10,50);
 
         mHandler = new Handler(){
             @Override
