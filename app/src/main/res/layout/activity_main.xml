@@ -22,22 +22,15 @@
     </android.support.design.widget.AppBarLayout>
 
 
-    
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+
 
         <cc.liyongzhi.electrocardiogram.ElectrocardiogramView
             android:id="@+id/electrocardiogram"
             android:layout_gravity="center"
             android:layout_width="300dp"
-            android:layout_height="300dp" />
-        
-        <TextView
-            android:layout_width=""
-            android:layout_height="" />
-        
-    </LinearLayout>
+            android:layout_height="300dp"
+            android:background="#898989"/>
+
+
 
 </android.support.design.widget.CoordinatorLayout>

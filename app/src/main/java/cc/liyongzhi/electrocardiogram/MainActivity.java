@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
-        mElectrocardiogram.setMaxPointAmount(50);
+        mElectrocardiogram.setMaxPointAmount(845);
 
         mHandler = new Handler(){
             @Override
@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
         new Thread(){
             public void run() {
-                for (int index=0; index<5000; index++)
+                for (int index=0; index<6000; index++)
                 {
                     Message message = new Message();
                     message.what = MSG_DATA_CHANGE;
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
                     message.arg2 = (int)(Math.random()*200);;
                     mHandler.sendMessage(message);
                     try {
-                        sleep(300);
+                        sleep(10);
                     } catch (InterruptedException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
