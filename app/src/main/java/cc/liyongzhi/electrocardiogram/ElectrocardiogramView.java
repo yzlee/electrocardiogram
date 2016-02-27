@@ -17,7 +17,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Jesse write this view for draw line,use it easy.
+ * @author liyongzhi
+ *
+ *
+ *
  */
 public class ElectrocardiogramView extends View {
     private final static String X_KEY = "Xpos";
@@ -34,6 +37,11 @@ public class ElectrocardiogramView extends View {
     private float mCurY = 0;
     //当前加入点
     private int mCurP = 0;
+    private int mRemovedPointNum = 0;
+
+    private int mEveryNPoint = 1;
+    private int mEveryNPointBold = 1;
+
     private Context mContext;
     private DisplayMetrics dm;
 
@@ -70,16 +78,39 @@ public class ElectrocardiogramView extends View {
         mPaint.setAntiAlias(true);
 
         mXUnitLength = getWidth() / (mPointMaxAmount - 1);
-        int relWidth = (int) (mXUnitLength * mPointMaxAmount);
+        int relWidth = (int) (mXUnitLength * (mPointMaxAmount - 1));
         mErrorWidth = getWidth() - relWidth;
 
-        mCorrectionPointNumber = mPointMaxAmount / mErrorWidth;
+        if (mErrorWidth != 0) {
+            mCorrectionPointNumber = mPointMaxAmount / mErrorWidth;
+        }
 
         Log.i("getWidth :", "" + getWidth());
         Log.i("getRealWidth :", "" + relWidth);
 
+        drawBackground(canvas);
+        drawWave(canvas);
+
+
+    }
+
+    public void drawBackground(Canvas canvas) {
+
+        int num = mPointMaxAmount/mEveryNPoint;
+        Paint paint = new Paint();
+        paint.setColor(Color.GREEN);
+        paint.setAntiAlias(true);
+        for (int i = 0; i < mListPoint.size(); i++) {
+            if (i%mEveryNPoint == 0){
+                canvas.drawLine(mListPoint.get(i).get(X_KEY), 0, mListPoint.get(i).get(X_KEY), getHeight(), paint);
+            }
+        }
+
+    }
+
+    public void drawWave(Canvas canvas) {
         for (int index = 0; index < mListPoint.size(); index++) {
-            if (mListPoint.size() == mPointMaxAmount && index == mCurP) {
+            if (mListPoint.size() == mPointMaxAmount && (index >= mCurP && index <mCurP + mRemovedPointNum)) {
                 continue;
             }
             if (index > 0) {
@@ -99,12 +130,14 @@ public class ElectrocardiogramView extends View {
      * @param curY which y position you want to draw.
      */
     public void setLinePoint(int curX, float curY) {
+
         Map<String, Float> temp = new HashMap<String, Float>();
         temp.put(X_KEY, mCurX);
         if (mCorrectionPointNumber!=0 && mCurP%mCorrectionPointNumber == 0) {
             mCurX++;
         }
         mCurX += mXUnitLength;
+        Log.d("mXUnitLength", mXUnitLength + "");
         mCurY = curY;
         temp.put(Y_KEY, curY);
         //判断当前点是否大于最大点数
@@ -127,6 +160,10 @@ public class ElectrocardiogramView extends View {
         invalidate();
     }
 
+    public void setRemovedPointNum(int removedPointNum) {
+        mRemovedPointNum = removedPointNum;
+    }
+
     public float getCurrentPointX() {
         return mCurX;
     }
@@ -142,7 +179,18 @@ public class ElectrocardiogramView extends View {
 
     public void setMaxPointAmount(int i) {
         mPointMaxAmount = i;
+    }
 
+    /**
+     *@param everyNPoint 每everyNPoint个点画一条细线
+     *@param everyNPointBold  每everyNPoint个点画一条粗线
+     */
+    public void setEveryNPoint(int everyNPoint,int everyNPointBold) {
+        if (everyNPoint == 0 || everyNPointBold < everyNPoint) {
+            return;
+        }
+        mEveryNPoint = everyNPoint;
+        mEveryNPointBold = everyNPointBold;
     }
 
 }

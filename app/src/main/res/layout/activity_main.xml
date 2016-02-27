@@ -28,8 +28,7 @@
             android:id="@+id/electrocardiogram"
             android:layout_gravity="center"
             android:layout_width="300dp"
-            android:layout_height="300dp"
-            android:background="#898989"/>
+            android:layout_height="300dp" />
 
 
 
