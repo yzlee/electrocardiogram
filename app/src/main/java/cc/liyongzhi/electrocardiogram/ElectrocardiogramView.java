@@ -25,6 +25,10 @@ public class ElectrocardiogramView extends View {
 
     //最大点的数量
     private int mPointMaxAmount;
+    //需要修正的次数
+    private int mCorrectionPointNumber;
+    //由于计算每段尺寸时除法小数部分舍弃造成的误差的累计值
+    private int mErrorWidth;
     private float mXUnitLength;
     private float mCurX = 0;
     private float mCurY = 0;
@@ -66,13 +70,20 @@ public class ElectrocardiogramView extends View {
         mPaint.setAntiAlias(true);
 
         mXUnitLength = getWidth() / (mPointMaxAmount - 1);
+        int relWidth = (int) (mXUnitLength * mPointMaxAmount);
+        mErrorWidth = getWidth() - relWidth;
+
+        mCorrectionPointNumber = mPointMaxAmount / mErrorWidth;
+
         Log.i("getWidth :", "" + getWidth());
+        Log.i("getRealWidth :", "" + relWidth);
 
         for (int index = 0; index < mListPoint.size(); index++) {
-            if (index == mCurP) {
+            if (mListPoint.size() == mPointMaxAmount && index == mCurP) {
                 continue;
             }
             if (index > 0) {
+
                 canvas.drawLine(mListPoint.get(index - 1).get(X_KEY),
                         mListPoint.get(index - 1).get(Y_KEY),
                         mListPoint.get(index).get(X_KEY), mListPoint.get(index)
@@ -90,6 +101,9 @@ public class ElectrocardiogramView extends View {
     public void setLinePoint(int curX, float curY) {
         Map<String, Float> temp = new HashMap<String, Float>();
         temp.put(X_KEY, mCurX);
+        if (mCorrectionPointNumber!=0 && mCurP%mCorrectionPointNumber == 0) {
+            mCurX++;
+        }
         mCurX += mXUnitLength;
         mCurY = curY;
         temp.put(Y_KEY, curY);
