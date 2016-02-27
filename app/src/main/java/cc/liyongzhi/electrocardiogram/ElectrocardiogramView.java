@@ -122,11 +122,14 @@ public class ElectrocardiogramView extends View {
 
         Paint paint = new Paint();
         paint.setColor(Color.GREEN);
-        paint.setStrokeWidth(1);
         paint.setAntiAlias(true);
+
+        paint.setStrokeWidth(10);
+        canvas.drawLine(getWidth(), 0, getWidth(), getHeight(), paint);
+        paint.setStrokeWidth(1);
         for (int i = 0; i < mListVLine.size(); i++) {
             if (i == 0) {
-                paint.setStrokeWidth(8);
+                paint.setStrokeWidth(10);
                 canvas.drawLine(mListVLine.get(i), 0, mListVLine.get(i), getHeight(), paint);
                 paint.setStrokeWidth(1);
             } else if (i%mEveryNPoint == 0){
@@ -139,9 +142,15 @@ public class ElectrocardiogramView extends View {
                 }
             }
         }
-
+        paint.setStrokeWidth(10);
+        canvas.drawLine(0, getHeight(), getWidth(), getHeight(), paint);
+        paint.setStrokeWidth(1);
         for (int i = 0; i < mListHLine.size(); i++) {
-            if (i%mEveryNPoint == 0){
+            if (i == 0) {
+                paint.setStrokeWidth(10);
+                canvas.drawLine(0,  mListHLine.get(i), getWidth(), mListHLine.get(i), paint);
+                paint.setStrokeWidth(1);
+            } else if (i%mEveryNPoint == 0){
                 if (i%mEveryNPointBold == 0) {
                     paint.setStrokeWidth(3);
                     canvas.drawLine(0,  mListHLine.get(i), getWidth(), mListHLine.get(i), paint);
@@ -151,9 +160,6 @@ public class ElectrocardiogramView extends View {
                 }
             }
         }
-
-
-
     }
 
     public void drawWave(Canvas canvas) {

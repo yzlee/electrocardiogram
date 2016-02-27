@@ -23,7 +23,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
-        mElectrocardiogram.setMaxPointAmount(260);
+        mElectrocardiogram.setMaxPointAmount(300);
         mElectrocardiogram.setRemovedPointNum(10);
         mElectrocardiogram.setEveryNPoint(10,50);
 
@@ -63,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
             };
         }.start();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
