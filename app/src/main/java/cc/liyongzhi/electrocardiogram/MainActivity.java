@@ -1,12 +1,15 @@
 package cc.liyongzhi.electrocardiogram;
 
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+
+import java.io.IOException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -22,19 +25,20 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
-        mElectrocardiogram.setMaxPointAmount(150);
-        mElectrocardiogram.setRemovedPointNum(10);
-        mElectrocardiogram.setEveryNPoint(2,10);
-        mElectrocardiogram.setYPosOffset(600);
 
-        mHandler = new Handler(){
+        mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
+        mElectrocardiogram.setMaxPointAmount(900);
+        mElectrocardiogram.setRemovedPointNum(10);
+        mElectrocardiogram.setEveryNPoint(10, 50);
+     //   mElectrocardiogram.setYPosOffset(600);
+
+        mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
                 // TODO Auto-generated method stub
                 switch (msg.what) {
                     case MSG_DATA_CHANGE:
-                        mElectrocardiogram.setLinePoint(msg.arg2);
+                        mElectrocardiogram.setLinePoint((int)(msg.arg2 * 0.6));
                         break;
                     default:
                         break;
@@ -43,25 +47,35 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        new Thread(){
+        new Thread() {
             public void run() {
-                for (int index=0; index<100000; index++)
-                {
-                    Message message = new Message();
-                    message.what = MSG_DATA_CHANGE;
 
-                    message.arg2 = (int)(Math.random()*600);;
+                try {
+                    FileIO fileIO = new FileIO();
+                    fileIO.readFileSdcardFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data11.txt", new FileIO.SendValueInterface() {
+                        int i = 0;
 
-                    try {
-                        sleep(30);
-                    } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    mHandler.sendMessage(message);
+                        @Override
+                        public void sendValue(int c) {
+                            Message message = new Message();
+                            message.what = MSG_DATA_CHANGE;
+                            message.arg2 = c;
+                            try {
+                                sleep(4);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                            mHandler.sendMessage(message);
 
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            };
+            }
+
+            ;
         }.start();
     }
 
