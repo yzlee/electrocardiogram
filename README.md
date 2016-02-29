@@ -13,6 +13,8 @@ mElectrocardiogram.setMaxPointAmount(300);
 mElectrocardiogram.setRemovedPointNum(10);
 //设置背景网格为每10个点画一条细线，每50个点画一条粗线
 mElectrocardiogram.setEveryNPoint(10,50);
+//设置Y轴向下偏移量
+mElectrocardiogram.setYPosOffset(600);
 ```
 
 然后引用
