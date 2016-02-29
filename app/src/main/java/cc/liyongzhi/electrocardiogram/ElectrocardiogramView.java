@@ -7,9 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,10 +37,14 @@ public class ElectrocardiogramView extends View {
     private int mCurP = 0;
     private int mRemovedPointNum = 0;
 
+    private int mStartYOffset;
+
     private int mEveryNPoint = 1;
     private int mEveryNPointBold = 1;
     //设置为false后不会重新生成背景
     private Boolean mBFlag = true;
+    //设置为false后不会再次计算起始点Y轴位置
+    private Boolean mIsStartPosNotSet = true;
 
     private Context mContext;
     private DisplayMetrics dm;
@@ -87,6 +89,11 @@ public class ElectrocardiogramView extends View {
 
         if (mErrorWidth != 0) {
             mCorrectionPointNumber = mPointMaxAmount / mErrorWidth;
+        }
+
+        if (mIsStartPosNotSet) {
+            mStartYOffset = getHeight() / 2;
+            mIsStartPosNotSet = false;
         }
 
 //        Log.i("getWidth :", "" + getWidth());
@@ -180,10 +187,9 @@ public class ElectrocardiogramView extends View {
     }
 
     /**
-     * @param curX which x position you want to draw.
      * @param curY which y position you want to draw.
      */
-    public void setLinePoint(int curX, float curY) {
+    public void setLinePoint(float curY) {
 
         Map<String, Float> temp = new HashMap<String, Float>();
         temp.put(X_KEY, mCurX);
@@ -191,9 +197,14 @@ public class ElectrocardiogramView extends View {
             mCurX++;
         }
         mCurX += mXUnitLength;
-//        Log.d("mXUnitLength", mXUnitLength + "");
-        mCurY = curY;
-        temp.put(Y_KEY, curY);
+
+
+        //计算y真实所在点
+        float y = curY;
+        mCurY = mStartYOffset - y;
+
+
+        temp.put(Y_KEY, mCurY);
         //判断当前点是否大于最大点数
         if (mCurP < mPointMaxAmount) {
             try {
@@ -216,6 +227,14 @@ public class ElectrocardiogramView extends View {
 
     public void setRemovedPointNum(int removedPointNum) {
         mRemovedPointNum = removedPointNum;
+    }
+
+    /**
+     * @param pos 以左上角为起始点 向下的点的数量
+     */
+    public void setYPosOffset(int pos) {
+        mStartYOffset =  pos;
+        mIsStartPosNotSet = false;
     }
 
     public float getCurrentPointX() {

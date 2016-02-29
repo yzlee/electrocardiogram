@@ -23,9 +23,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
-        mElectrocardiogram.setMaxPointAmount(300);
+        mElectrocardiogram.setMaxPointAmount(150);
         mElectrocardiogram.setRemovedPointNum(10);
-        mElectrocardiogram.setEveryNPoint(10,50);
+        mElectrocardiogram.setEveryNPoint(2,10);
+        mElectrocardiogram.setYPosOffset(600);
 
         mHandler = new Handler(){
             @Override
@@ -33,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
                 // TODO Auto-generated method stub
                 switch (msg.what) {
                     case MSG_DATA_CHANGE:
-                        mElectrocardiogram.setLinePoint(msg.arg1, msg.arg2);
+                        mElectrocardiogram.setLinePoint(msg.arg2);
                         break;
                     default:
                         break;
@@ -48,8 +49,8 @@ public class MainActivity extends AppCompatActivity {
                 {
                     Message message = new Message();
                     message.what = MSG_DATA_CHANGE;
-                    message.arg1 = mX;
-                    message.arg2 = (int)(Math.random()*200);;
+
+                    message.arg2 = (int)(Math.random()*600);;
 
                     try {
                         sleep(30);
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     mHandler.sendMessage(message);
-                    mX += 10;
+
                 }
             };
         }.start();
