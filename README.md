@@ -20,5 +20,6 @@ mElectrocardiogram.setYPosOffset(600);
 然后引用
 
 ``` java
-mElectrocardiogram.setLinePoint(msg.arg1, msg.arg2);
+//提交数据
+mElectrocardiogram.setLinePoint(10);
 ```
