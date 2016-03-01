@@ -21,41 +21,18 @@ public class FileIO {
         void sendValue(int c);
     }
 
-    public String readFileSdcardFile(String fileName, SendValueInterface send) throws IOException {
-        String res="";
-        try
-        {
-
+    public void readFileSdcardFile(String fileName, SendValueInterface send) throws IOException {
             InputStreamReader read = new InputStreamReader(
-                    new FileInputStream(fileName),"UTF-8");
+                    new FileInputStream(fileName), "UTF-8");
             BufferedReader bufferedReader = new BufferedReader(read);
-
-
-            FileInputStream stream=new FileInputStream(fileName);
             String c;
-            while((c=bufferedReader.readLine())!= null)
-            {
+            while ((c = bufferedReader.readLine()) != null) {
                 send.sendValue(Integer.parseInt(c));
-                try {
-
-
-
-
-                    FileOutputStream fout = new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data11111.txt");
-
-                    Log.d("File IO :    ", c + "");
-                    fout.write(Integer.parseInt(c));
-                    fout.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Log.d("File IO :    ", c + "");
             }
-        } catch (Exception e)
-        {
-            e.printStackTrace();
-        }
-        return res;
+    }
+
+    public void readFileSdcardFileBinary(String fileName, SendValueInterface send) throws IOException {
+
     }
 }

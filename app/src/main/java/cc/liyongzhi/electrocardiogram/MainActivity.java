@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
         mElectrocardiogram.setMaxPointAmount(900);
         mElectrocardiogram.setRemovedPointNum(10);
         mElectrocardiogram.setEveryNPoint(10, 50);
+        mElectrocardiogram.setEveryNPointRefresh(10);
      //   mElectrocardiogram.setYPosOffset(600);
 
         mHandler = new Handler() {
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
                                 // TODO Auto-generated catch block
                                 e.printStackTrace();
                             }
+
                             mHandler.sendMessage(message);
 
                         }

@@ -46,6 +46,13 @@ public class ElectrocardiogramView extends View {
     //设置为false后不会再次计算起始点Y轴位置
     private Boolean mIsStartPosNotSet = true;
 
+
+    //设置每mEveryNPointRefresh个点刷新一次
+    private int mEveryNPointRefresh = 1;
+    //当前在第mCurrentPoint个点。
+    private int mCurrentPoint = 1;
+
+
     private Context mContext;
     private DisplayMetrics dm;
 
@@ -222,7 +229,10 @@ public class ElectrocardiogramView extends View {
         }
 
 //        Log.d("mListPoint", mListPoint.toString());
-        invalidate();
+        if (mCurP % mEveryNPointRefresh == 0) {
+            invalidate();
+        }
+
     }
 
     public void setRemovedPointNum(int removedPointNum) {
@@ -235,6 +245,15 @@ public class ElectrocardiogramView extends View {
     public void setYPosOffset(int pos) {
         mStartYOffset =  pos;
         mIsStartPosNotSet = false;
+    }
+
+
+    /**
+     * 设置每N个点刷新一次
+     * @param num 每num个点。
+     */
+    public void setEveryNPointRefresh(int num) {
+        mEveryNPointRefresh = num;
     }
 
     public float getCurrentPointX() {
@@ -264,7 +283,5 @@ public class ElectrocardiogramView extends View {
         }
         mEveryNPoint = everyNPoint;
         mEveryNPointBold = everyNPointBold;
-
     }
-
 }
