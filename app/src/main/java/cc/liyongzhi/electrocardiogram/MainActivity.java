@@ -53,7 +53,27 @@ public class MainActivity extends AppCompatActivity {
 
                 try {
                     FileIO fileIO = new FileIO();
-                    fileIO.readFileSdcardFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data11.txt", new FileIO.SendValueInterface() {
+
+                    fileIO.readFileSdcardFileBinary(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data111", new FileIO.SendValueInterface() {
+                        int i = 0;
+
+                        @Override
+                        public void sendValue(int c) {
+                            Message message = new Message();
+                            message.what = MSG_DATA_CHANGE;
+                            try {
+                                sleep(4);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
+                            message.arg2 = c;
+                            mHandler.sendMessage(message);
+
+                        }
+                    }, 2);
+
+/*                    fileIO.readFileSdcardFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data11.txt", new FileIO.SendValueInterface() {
                         int i = 0;
 
                         @Override
@@ -71,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                             mHandler.sendMessage(message);
 
                         }
-                    });
+                    });*/
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
