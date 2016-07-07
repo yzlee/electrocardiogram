@@ -134,10 +134,16 @@ public class ECGView extends View {
 
             if (isColumnSubViewNumSet && isAspectRatioSet) {
                 int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
-                columnSubViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+                subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
             } else if (isColumnSubViewNumSet) {
                 // if 1 < tmpAspectRatio < 2 then it is acceptable
-
+                double tmpAspectRatio = width / (height / (inputChannelNum / columnSubViewNum));
+                if (tmpAspectRatio <= 2 && tmpAspectRatio >= 1) {
+                    subViewNum = inputChannelNum;
+                } else {
+                    int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
+                    subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+                }
             } else if (isAspectRatioSet) {
 
             } else {
