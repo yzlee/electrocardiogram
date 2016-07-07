@@ -22,13 +22,16 @@
     </android.support.design.widget.AppBarLayout>
 
 
+    <cc.liyongzhi.ecgview.ECGView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></cc.liyongzhi.ecgview.ECGView>
 
 
-        <cc.liyongzhi.electrocardiogram.ElectrocardiogramView
+<!--        <cc.liyongzhi.electrocardiogram.ElectrocardiogramView
             android:id="@+id/electrocardiogram"
             android:layout_gravity="center"
             android:layout_width="300dp"
-            android:layout_height="300dp" />
+            android:layout_height="300dp" />-->
 
 
 

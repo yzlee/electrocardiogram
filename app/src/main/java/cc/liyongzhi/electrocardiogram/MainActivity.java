@@ -26,6 +26,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
 
+
+
+/*
         mElectrocardiogram = (ElectrocardiogramView) findViewById(R.id.electrocardiogram);
         mElectrocardiogram.setMaxPointAmount(900);
         mElectrocardiogram.setRemovedPointNum(10);
@@ -73,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }, 2);
 
+*/
 /*                    fileIO.readFileSdcardFile(Environment.getExternalStorageDirectory().getAbsolutePath() + "/data11.txt", new FileIO.SendValueInterface() {
                         int i = 0;
 
@@ -91,7 +95,8 @@ public class MainActivity extends AppCompatActivity {
                             mHandler.sendMessage(message);
 
                         }
-                    });*/
+                    });*//*
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -99,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
             ;
         }.start();
+*/
     }
 
     @Override
