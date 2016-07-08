@@ -169,11 +169,7 @@ public class ECGView extends View {
     }
 
     private void changeSubViewLayout() {
-
-        int subViewYPix = 0;
         ECGSubView subview = null;
-        int startPointX = 0;
-        int startPointY = 0;
         for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
             subview = subViewList.get(i);
             int tmp = currentPageLeftSubViewNumber % columnSubViewNum;
@@ -184,14 +180,19 @@ public class ECGView extends View {
             } else {
                 subWidth = mainViewWidth / tmp;
             }
-            int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
             if (isAspectRatioSet) {
+                //todo is changed the current page sub-view number?
                 subHeight = (int)(subWidth / aspectRatio);
             } else {
                 subHeight = mainViewHeight / (currentPageLeftSubViewNumber / columnSubViewNum + 1);
             }
+            int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
+            int offsetStartPointY = ((i - currentPageStartIndex) / columnSubViewNum) * subHeight;
             subview.setSubWidth(subWidth);
             subview.setSubHeight(subHeight);
+            subview.setParentHeight(mainViewHeight);
+            subview.setParentWidth(mainViewWidth);
+            subview.setOffsetStartPoint(offsetStartPointX, offsetStartPointY);
         }
     }
 
