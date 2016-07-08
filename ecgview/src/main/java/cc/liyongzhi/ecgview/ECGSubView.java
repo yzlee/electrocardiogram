@@ -2,6 +2,8 @@ package cc.liyongzhi.ecgview;
 
 import android.graphics.Canvas;
 
+import java.util.Queue;
+
 /**
  * Created by lee on 7/8/16.
  */
@@ -13,9 +15,10 @@ public class ECGSubView {
     private int subWidth = 0;
     private int parentWidth = 0;
     private int parentHeight = 0;
+    private Queue dataChannel;
 
-    public ECGSubView() {
-
+    public ECGSubView(Queue dataChannel) {
+        this.dataChannel = dataChannel;
     }
 
     public void draw(Canvas canvas) {

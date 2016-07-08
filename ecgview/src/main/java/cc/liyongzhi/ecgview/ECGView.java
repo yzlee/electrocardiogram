@@ -8,6 +8,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.Queue;
 
 /**
  * Created by lee on 7/7/16.
@@ -31,7 +32,7 @@ public class ECGView extends View {
     private int defaultLead = 1;
     private int columnSubViewNum = 2;
     private double aspectRatio = 4/3; //width / height
-    private int inputChannelNum = 1; //
+    private ArrayList<Queue> channel = new ArrayList<>();
 
 
     //Used by view;
@@ -48,6 +49,8 @@ public class ECGView extends View {
     private int currentPage = 0; // index is from 0; currentPage * subViewNum = theFirstSubViewIndexFromSubViewListInCurrentPage
     private int currentPageStartIndex = 0;
     private int currentPageLeftSubViewNumber = 0;
+    private int inputChannelNum = 1; //
+
 
 
     public ECGView(Context context) {
@@ -124,9 +127,6 @@ public class ECGView extends View {
 
     }
 
-    private void initSubView() {
-
-    }
 
     private void subViewNumChanged() {
         refreshCurrentPageSubViewIndex();
@@ -164,7 +164,7 @@ public class ECGView extends View {
 
     private void createSubView() {
         for (int i = 0; i < inputChannelNum; i++) {
-            subViewList.add(new ECGSubView());
+            subViewList.add(new ECGSubView(channel.get(i)));
         }
     }
 
@@ -293,6 +293,11 @@ public class ECGView extends View {
         this.isSubViewNumInited = true;
     }
 
+    public void setChannel(ArrayList<Queue> channel) {
+        this.channel = channel;
+        this.inputChannelNum = channel.size();
+    }
+
     public void setZoomAllowed(boolean zoomAllowed) {
         isZoomAllowed = zoomAllowed;
     }
@@ -341,10 +346,6 @@ public class ECGView extends View {
     public void setAspectRatio(double aspectRatio) {
         this.aspectRatio = aspectRatio;
         this.isAspectRatioSet = true;
-    }
-
-    public void setInputChannelNum(int inputChannelNum) {
-        this.inputChannelNum = inputChannelNum;
     }
 }
 
