@@ -120,44 +120,61 @@ public class ECGView extends View {
 
     private void createSubView(int width, int height, int num) {
 //        Log.d("ECGView", "[createSubView] subViewNum = " + num);
-
-
         if (num == 0) {
-
-            //nothing has been set
-
-            //aspectRatio has been set and others is default
-
-            //columnSubViewNum has been set and others is default
-
-            //Both columnSubViewNum and aspectRatio is set and others is default
-
-            if (isColumnSubViewNumSet && isAspectRatioSet) {
-                int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
-                subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
-            } else if (isColumnSubViewNumSet) {
-                // if 1 < tmpAspectRatio < 2 then it is acceptable
-                double tmpAspectRatio = width / (height / (inputChannelNum / columnSubViewNum));
-                if (tmpAspectRatio <= 2 && tmpAspectRatio >= 1) {
-                    subViewNum = inputChannelNum;
-                } else {
-                    int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
-                    subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
-                }
-            } else if (isAspectRatioSet) {
-
-            } else {
-
-            }
-
+            autoAdjustDefParam(width, height);
         }
+
+
 
         isSubViewNumChanged = false;
         isSubViewGenerated = true;
     }
 
+    private void autoAdjustDefParam(int width, int height) {
+        //nothing has been set
+        //aspectRatio has been set and others is default
+        //columnSubViewNum has been set and others is default
+        //Both columnSubViewNum and aspectRatio is set and others is default
+        if (isColumnSubViewNumSet && isAspectRatioSet) {
+            int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
+            subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+        } else if (isColumnSubViewNumSet) {
+            // if 1 < tmpAspectRatio < 2 then it is acceptable
+            double tmpAspectRatio = width / (height / (inputChannelNum / columnSubViewNum));
+            if (tmpAspectRatio <= 2 && tmpAspectRatio >= 1) {
+                subViewNum = inputChannelNum;
+            } else {
+                int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
+                subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+            }
+        } else if (isAspectRatioSet) {
+            if (aspectRatio >= 2) {
+                columnSubViewNum = 1;
+            } else {
+                columnSubViewNum = 2;
+            }
+            int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
+            subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+        } else {
+            columnSubViewNum = 2;
+            double tmpAspectRatio = width / (height / (inputChannelNum / columnSubViewNum));
+            if (tmpAspectRatio <= 2 && tmpAspectRatio >= 1) {
+                subViewNum = inputChannelNum;
+            } else if (tmpAspectRatio > 2) {
+                aspectRatio = 16/9;
+                int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
+                subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+            } else {
+                aspectRatio = 16/9;
+                columnSubViewNum = 1;
+                int rowSubViewNum = (int)(height / ((width / columnSubViewNum) / aspectRatio));
+                subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+            }
+        }
+    }
 
-    private void changeSubViewLayout(int num) {
+
+    private void changeSubViewLayout() {
 
 
     }
