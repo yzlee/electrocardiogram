@@ -1,7 +1,6 @@
 package cc.liyongzhi.ecgview;
 
 import android.content.Context;
-import android.content.pm.ProviderInfo;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -124,7 +123,12 @@ public class ECGView extends View {
             autoAdjustDefParam(width, height);
         }
 
+        //get every sub-view's subHeight / subWidth / sub offset start point / width / height
+        generateSubViewLayout();
 
+        for (int i = 0; i < subViewNum; i++) {
+
+        }
 
         isSubViewNumChanged = false;
         isSubViewGenerated = true;
@@ -174,7 +178,7 @@ public class ECGView extends View {
     }
 
 
-    private void changeSubViewLayout() {
+    private void generateSubViewLayout() {
 
 
     }
