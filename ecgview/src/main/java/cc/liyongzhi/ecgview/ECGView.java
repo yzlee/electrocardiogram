@@ -181,7 +181,6 @@ public class ECGView extends View {
                 subWidth = mainViewWidth / tmp;
             }
             if (isAspectRatioSet) {
-                //todo is changed the current page sub-view number?
                 subHeight = (int)(subWidth / aspectRatio);
             } else {
                 subHeight = mainViewHeight / (currentPageLeftSubViewNumber / columnSubViewNum + 1);
