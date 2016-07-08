@@ -7,7 +7,8 @@ import android.graphics.Canvas;
  */
 public class ECGSubView {
 
-    private int offsetStartPoint = 0;
+    private int offsetStartPointX = 0;
+    private int offsetStartPointY = 0;
     private int subHeight = 0;
     private int subWidth = 0;
     private int parentWidth = 0;
@@ -21,8 +22,9 @@ public class ECGSubView {
 
     }
 
-    public void setOffsetStartPoint(int offsetStartPoint) {
-        this.offsetStartPoint = offsetStartPoint;
+    public void setOffsetStartPoint(int offsetStartPointX, int offsetStartPointY) {
+        this.offsetStartPointX = offsetStartPointX;
+        this.offsetStartPointY = offsetStartPointY;
     }
 
     public void setSubHeight(int subHeight) {

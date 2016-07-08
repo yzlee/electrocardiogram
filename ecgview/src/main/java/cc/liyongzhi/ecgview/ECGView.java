@@ -37,7 +37,7 @@ public class ECGView extends View {
     //Used by view;
     private int mainViewWidth = 0;
     private int mainViewHeight = 0;
-    private boolean isSubViewNumChanged = false;
+    private boolean isSubViewNumInited = false;
     private boolean isInitDefParam = false; // Once the subView is Generated, this param is true. And it will never be false.
     private boolean isColumnSubViewNumSet = false;
     private boolean isAspectRatioSet = false;
@@ -67,6 +67,10 @@ public class ECGView extends View {
 
     private void init(Context context) {
 
+        if (subViewList != null && subViewList.size() == 0) {
+            createSubView();
+        }
+
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.OnScaleGestureListener() {
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
@@ -77,14 +81,14 @@ public class ECGView extends View {
                 if (scaleFactor > 1.2) {
                     if (isColumnSubViewNumSet && subViewNum + columnSubViewNum <= maxSubViewNum) {
                         subViewNum += columnSubViewNum;
-                        isSubViewNumChanged = true;
+                        subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
 
                     if (!isColumnSubViewNumSet && subViewNum < maxSubViewNum) {
                         subViewNum++;
-                        isSubViewNumChanged = true;
+                        subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
@@ -93,23 +97,20 @@ public class ECGView extends View {
                 if (scaleFactor < 0.85) {
                     if (isColumnSubViewNumSet && subViewNum - columnSubViewNum >= minSubViewNum) {
                         subViewNum -= columnSubViewNum;
-                        isSubViewNumChanged = true;
+                        subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
 
                     if (!isColumnSubViewNumSet && subViewNum > minSubViewNum) {
                         subViewNum--;
-                        isSubViewNumChanged = true;
+                        subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
                 }
-
-
                 return true;
             }
-
             @Override
             public boolean onScaleBegin(ScaleGestureDetector detector) {
                 return true;
@@ -123,15 +124,30 @@ public class ECGView extends View {
 
     }
 
+    private void initSubView() {
+
+    }
+
     private void subViewNumChanged() {
-
+        refreshCurrentPageSubViewIndex();
+        recreateSubView();
     }
 
-    private void subViewNumChangeFinished() {
-
+    private void currentPageChanged(int offset) {
+        int tmpCurrentPage = currentPage + offset;
+        if (tmpCurrentPage < 0) {
+            currentPage = 0;
+        } else if (tmpCurrentPage >= inputChannelNum / subViewNum) {
+            currentPage = inputChannelNum / subViewNum - 1;
+        } else {
+            currentPage = tmpCurrentPage;
+        }
+        refreshCurrentPageSubViewIndex();
+        recreateSubView();
     }
 
-    private void refreshCurrentPageSubViewList() {
+
+    private void refreshCurrentPageSubViewIndex() {
         currentPageStartIndex = currentPage * subViewNum;
         int leftSubViewNumber = inputChannelNum - currentPageStartIndex;
         currentPageLeftSubViewNumber = leftSubViewNumber <= subViewNum ? leftSubViewNumber : subViewNum;
@@ -142,13 +158,7 @@ public class ECGView extends View {
     }
 
     private void recreateSubView() {
-//        Log.d("ECGView", "[recreateSubView] subViewNum = " + num);
-        if (subViewList.size() == 0) {
-            createSubView();
-        }
-
         changeSubViewLayout();
-
     }
 
 
@@ -159,11 +169,24 @@ public class ECGView extends View {
     }
 
     private void changeSubViewLayout() {
-        int currentStartIndex = currentPage * subViewNum;
-        int leftSubViewNumber = inputChannelNum - currentStartIndex;
-        int currentPageLeftSubViewNumber = leftSubViewNumber <= subViewNum ? leftSubViewNumber : subViewNum;
-        for (int i = currentStartIndex; i < currentStartIndex + currentPageLeftSubViewNumber; i++) {
 
+        int subViewYPix = 0;
+        ECGSubView subview = null;
+        int startPointX = 0;
+        int startPointY = 0;
+        for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
+            subview = subViewList.get(i);
+            int tmp = currentPageLeftSubViewNumber % columnSubViewNum;
+            if (i < currentPageLeftSubViewNumber + currentPageStartIndex - tmp) {
+                int subWidth = mainViewWidth / columnSubViewNum;
+                subview.setSubWidth(subWidth);
+                int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
+
+            } else {
+                int subWidth = mainViewWidth / tmp;
+                subview.setSubWidth(subWidth);
+                int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
+            }
         }
     }
 
@@ -178,7 +201,13 @@ public class ECGView extends View {
         //aspectRatio has been set and others is default
         //columnSubViewNum has been set and others is default
         //Both columnSubViewNum and aspectRatio is set and others is default
-        if (isColumnSubViewNumSet && isAspectRatioSet) {
+        if (isColumnSubViewNumSet && isAspectRatioSet && isSubViewNumInited) {
+            // I really want to do something but ……
+        } else if (isColumnSubViewNumSet && isSubViewNumInited) {
+            aspectRatio = mainViewWidth / columnSubViewNum / (mainViewHeight / (subViewNum / columnSubViewNum));
+        } else if (isAspectRatioSet && isSubViewNumInited) {
+            columnSubViewNum = 2;
+        } else if (isColumnSubViewNumSet && isAspectRatioSet) {
             int rowSubViewNum = (int)(mainViewHeight / ((mainViewWidth / columnSubViewNum) / aspectRatio));
             subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
         } else if (isColumnSubViewNumSet) {
@@ -198,6 +227,9 @@ public class ECGView extends View {
             }
             int rowSubViewNum = (int)(mainViewHeight / ((mainViewWidth / columnSubViewNum) / aspectRatio));
             subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
+        } else if (isSubViewNumInited) {
+            columnSubViewNum = 2;
+            aspectRatio = 16/9;
         } else {
             columnSubViewNum = 2;
             double tmpAspectRatio = mainViewWidth / (mainViewHeight / (inputChannelNum / columnSubViewNum));
@@ -214,7 +246,6 @@ public class ECGView extends View {
                 subViewNum = rowSubViewNum * columnSubViewNum > inputChannelNum ? inputChannelNum : rowSubViewNum * columnSubViewNum;
             }
         }
-        isSubViewNumChanged = false;
         isInitDefParam = true;
     }
 
@@ -224,18 +255,15 @@ public class ECGView extends View {
         super.onDraw(canvas);
 
         //Generate default parameter in the first time.
-        if (!isInitDefParam && !isSubViewNumChanged) {
+        if (!isInitDefParam) {
             autoAdjustDefParam();
-        }
-
-        // if sub-view number changed, recreate sub-view anyway.
-        if (isSubViewNumChanged) {
-            recreateSubView();
+            subViewNumChanged();
         }
 
         drawCurrentPage(canvas);
 
     }
+
 
 
 
@@ -256,7 +284,7 @@ public class ECGView extends View {
 
     public void setSubViewNum(int subViewNum) {
         this.subViewNum = subViewNum;
-        this.isSubViewNumChanged = true;
+        this.isSubViewNumInited = true;
     }
 
     public void setZoomAllowed(boolean zoomAllowed) {
