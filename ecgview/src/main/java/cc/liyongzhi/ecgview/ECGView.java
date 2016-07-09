@@ -78,33 +78,14 @@ public class ECGView extends View {
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
                 scaleFactor *= detector.getScaleFactor();
-
 //                LogShower.custom("liyongzhi", "ECGView", "onScale", "detector.getScaleFactor() = " + detector.getScaleFactor());
-
                 if (scaleFactor > 1.2) {
-                    if (isColumnSubViewNumSet && subViewNum + columnSubViewNum <= maxSubViewNum) {
-                        subViewNum += columnSubViewNum;
-                        subViewNumChanged();
-                        invalidate();
-                        scaleFactor = 1.0f;
-                    }
-
-                    if (!isColumnSubViewNumSet && subViewNum < maxSubViewNum) {
-                        subViewNum++;
-                        subViewNumChanged();
-                        invalidate();
-                        scaleFactor = 1.0f;
-                    }
-                }
-
-                if (scaleFactor < 0.85) {
                     if (isColumnSubViewNumSet && subViewNum - columnSubViewNum >= minSubViewNum) {
                         subViewNum -= columnSubViewNum;
                         subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
-
                     if (!isColumnSubViewNumSet && subViewNum > minSubViewNum) {
                         subViewNum--;
                         subViewNumChanged();
@@ -112,13 +93,27 @@ public class ECGView extends View {
                         scaleFactor = 1.0f;
                     }
                 }
+                if (scaleFactor < 0.85) {
+                    if (isColumnSubViewNumSet && subViewNum + columnSubViewNum <= maxSubViewNum) {
+                        subViewNum += columnSubViewNum;
+                        subViewNumChanged();
+                        invalidate();
+                        scaleFactor = 1.0f;
+                    }
+                    if (!isColumnSubViewNumSet && subViewNum < maxSubViewNum) {
+                        subViewNum++;
+                        subViewNumChanged();
+                        invalidate();
+                        scaleFactor = 1.0f;
+                    }
+
+                }
                 return true;
             }
             @Override
             public boolean onScaleBegin(ScaleGestureDetector detector) {
                 return true;
             }
-
             @Override
             public void onScaleEnd(ScaleGestureDetector detector) {
                 scaleFactor = 1.0f;
@@ -196,7 +191,7 @@ public class ECGView extends View {
     }
 
     private void drawCurrentPage(Canvas canvas) {
-        for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber; i++) {
+        for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
             subViewList.get(i).draw(canvas);
         }
     }

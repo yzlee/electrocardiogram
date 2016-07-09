@@ -15,6 +15,8 @@ public class ECGSubView {
     private int subWidth = 0;
     private int parentWidth = 0;
     private int parentHeight = 0;
+
+
     private Queue dataChannel;
 
     public ECGSubView(Queue dataChannel) {
@@ -22,7 +24,6 @@ public class ECGSubView {
     }
 
     public void draw(Canvas canvas) {
-
     }
 
     public void setOffsetStartPoint(int offsetStartPointX, int offsetStartPointY) {
