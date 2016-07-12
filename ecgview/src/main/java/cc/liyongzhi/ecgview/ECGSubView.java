@@ -13,8 +13,8 @@ public class ECGSubView {
 
     private int offsetStartPointX = 0;
     private int offsetStartPointY = 0;
-    private int subHeight = 0;
-    private int subWidth = 0;
+    private float subHeight = 0;
+    private float subWidth = 0;
     private int parentWidth = 0;
     private int parentHeight = 0;
     private Queue dataChannel;
@@ -43,11 +43,11 @@ public class ECGSubView {
         this.offsetStartPointY = offsetStartPointY;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 }
 
-    public void setSubHeight(int subHeight) {
+    public void setSubHeight(float subHeight) {
         this.subHeight = subHeight;
     }
 
-    public void setSubWidth(int subWidth) {
+    public void setSubWidth(float subWidth) {
         this.subWidth = subWidth;
     }
 

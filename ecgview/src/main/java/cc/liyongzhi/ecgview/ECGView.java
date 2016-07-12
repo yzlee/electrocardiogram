@@ -188,20 +188,20 @@ public class ECGView extends View {
         for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
             subview = subViewList.get(i);
             int tmp = currentPageLeftSubViewNumber % columnSubViewNum;
-            int subWidth = 0;
-            int subHeight = 0;
+            float subWidth = 0;
+            float subHeight = 0;
             if (i < currentPageLeftSubViewNumber + currentPageStartIndex - tmp) {
-                subWidth = mainViewWidth / columnSubViewNum;
+                subWidth = (float) mainViewWidth / columnSubViewNum;
             } else {
-                subWidth = mainViewWidth / tmp;
+                subWidth = (float) mainViewWidth / tmp;
             }
             if (isAspectRatioSet) {
                 subHeight = (int)(subWidth / aspectRatio);
             } else {
-                subHeight = mainViewHeight / ((currentPageLeftSubViewNumber + columnSubViewNum - 1)/ columnSubViewNum);
+                subHeight = (float) mainViewHeight / ((currentPageLeftSubViewNumber + columnSubViewNum - 1)/ columnSubViewNum);
             }
-            int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
-            int offsetStartPointY = ((i - currentPageStartIndex) / columnSubViewNum) * subHeight;
+            int offsetStartPointX = (int) (((i - currentPageStartIndex) % columnSubViewNum) * subWidth);
+            int offsetStartPointY = (int) (((i - currentPageStartIndex) / columnSubViewNum) * subHeight);
             subview.setSubWidth(subWidth);
             subview.setSubHeight(subHeight);
             subview.setParentHeight(mainViewHeight);
