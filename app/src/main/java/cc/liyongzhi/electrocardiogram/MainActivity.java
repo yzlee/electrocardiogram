@@ -33,11 +33,17 @@ public class MainActivity extends AppCompatActivity {
         ECGView view = (ECGView) findViewById(R.id.ecg_view);
         view.setSubViewNum(12);
         view.setColumnSubViewNum(3);
+        ArrayList<String> text = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            text.add(i + 1 + "");
+        }
         ArrayList<Queue> arrayList = new ArrayList<>();
         for (int i = 0; i < 12; i ++) {
             arrayList.add(new LinkedBlockingQueue());
         }
+        view.setText(text);
         view.setChannel(arrayList);
+        view.start();
 
 
 /*

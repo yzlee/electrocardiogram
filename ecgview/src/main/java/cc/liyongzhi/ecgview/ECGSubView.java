@@ -17,6 +17,7 @@ public class ECGSubView {
     private int subWidth = 0;
     private int parentWidth = 0;
     private int parentHeight = 0;
+    private String text = "";
     private Queue dataChannel;
 
 
@@ -38,7 +39,17 @@ public class ECGSubView {
         //draw wave
         Paint wavePaint = new Paint();
 
+        //draw number
+        Paint textPaint = new Paint();
+        textPaint.setColor(Color.BLACK);
+        canvas.drawText(text, offsetStartPointX + subWidth / 8, offsetStartPointY + subHeight / 5, textPaint);
+
     }
+
+    public boolean isBelongToMe(int x, int y) {
+        return x < offsetStartPointX + subWidth && x >= offsetStartPointX && y < offsetStartPointY + subHeight && y >= offsetStartPointY;
+    }
+
 
     public void setOffsetStartPoint(int offsetStartPointX, int offsetStartPointY) {
         this.offsetStartPointX = offsetStartPointX;
@@ -61,6 +72,10 @@ public class ECGSubView {
         this.parentHeight = parentHeight;
     }
 
+    public void setText(String text) {
+        this.text = text;
+    }
+
     public int getOffsetStartPointX() {
         return offsetStartPointX;
     }
@@ -68,4 +83,6 @@ public class ECGSubView {
     public int getOffsetStartPointY() {
         return offsetStartPointY;
     }
+
+
 }

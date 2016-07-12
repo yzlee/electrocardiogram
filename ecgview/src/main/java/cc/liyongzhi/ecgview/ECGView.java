@@ -37,6 +37,7 @@ public class ECGView extends View {
     private int columnSubViewNum = 2;
     private double aspectRatio = 4/3; //width / height
     private ArrayList<Queue> channel = new ArrayList<>();
+    private ArrayList<String> text = new ArrayList<>();
 
 
     //Used by view;
@@ -57,6 +58,7 @@ public class ECGView extends View {
     private DisplayMetrics displayMetrics;
     private float pixelPerMillimeter;
     private int originColumnSubViewNum = 2;
+    private int thumbnailOrDetail = -1; // -1 is thumbnail
 
 
     Runnable refreshRunnable = new Runnable() {
@@ -86,6 +88,7 @@ public class ECGView extends View {
 
     private void init(Context context) {
 
+
         //get pixelPerMillimeter
         displayMetrics = new DisplayMetrics();
         ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -99,8 +102,7 @@ public class ECGView extends View {
 //                LogShower.custom("liyongzhi", "ECGView", "onScale", "detector.getScaleFactor() = " + detector.getScaleFactor());
                 if (scaleFactor > 1.2) {
                     LogShower.custom("liyongzhi", "ECGView", "onScale", "scaleFactor > 1.2");
-                    if (isColumnSubViewNumSet && subViewNum - columnSubViewNum >= minSubViewNum) {
-
+                    if (isColumnSubViewNumSet && subViewNum > minSubViewNum && columnSubViewNum >= 1) {
                         if (subViewNum / columnSubViewNum < columnSubViewNum && columnSubViewNum > 1) {
                             subViewNum -= subViewNum / columnSubViewNum;
                             columnSubViewNum --;
@@ -121,9 +123,7 @@ public class ECGView extends View {
                     }
                 }
                 if (scaleFactor < 0.85) {
-                    if (isColumnSubViewNumSet && subViewNum + columnSubViewNum <= maxSubViewNum) {
-                        subViewNum += columnSubViewNum;
-
+                    if (isColumnSubViewNumSet && subViewNum < maxSubViewNum && columnSubViewNum <= originColumnSubViewNum) {
                         if (subViewNum / columnSubViewNum >= columnSubViewNum && columnSubViewNum < originColumnSubViewNum) {
                             subViewNum += subViewNum / columnSubViewNum;
                             columnSubViewNum ++;
@@ -194,7 +194,11 @@ public class ECGView extends View {
 
     private void createSubView() {
         for (int i = 0; i < inputChannelNum; i++) {
-            subViewList.add(new ECGSubView(channel.get(i)));
+            ECGSubView subView = new ECGSubView(channel.get(i));
+            if (text.get(i) != null) {
+                subView.setText(text.get(i));
+            }
+            subViewList.add(subView);
         }
     }
 
@@ -253,6 +257,14 @@ public class ECGView extends View {
             ECGSubView subView = subViewList.get(i);
             subView.draw(canvas);
         }
+    }
+
+    private void drawDetail(Canvas canvas) {
+        ECGSubView subView = subViewList.get(thumbnailOrDetail);
+        subView.setSubHeight(mainViewHeight);
+        subView.setSubWidth(mainViewWidth);
+        subView.setOffsetStartPoint(0,0);
+        subView.draw(canvas);
     }
 
     private void autoAdjustDefParam() {
@@ -319,9 +331,28 @@ public class ECGView extends View {
             subViewNumChanged();
         }
 
-        drawCurrentPage(canvas);
+
+        if (thumbnailOrDetail == -1) {
+            drawCurrentPage(canvas);
+        } else {
+            drawDetail(canvas);
+        }
     }
 
+    private void showDetail(int x, int y) {
+        for (int i = 0; i < subViewList.size(); i ++) {
+            ECGSubView subView = subViewList.get(i);
+            if (subView.isBelongToMe(x,y)) {
+                thumbnailOrDetail = i;
+                invalidate();
+            }
+        }
+    }
+
+    private void showThumbnail() {
+        subViewNumChanged();
+        thumbnailOrDetail = -1;
+    }
 
     private void queueToArray() {
         int pointPerFresh = drawPointSpeed / fps;
@@ -330,15 +361,29 @@ public class ECGView extends View {
     public void start() {
         queueToArray();
         post(refreshRunnable);
+        if (subViewList != null && subViewList.size() == 0) {
+            createSubView();
+        }
     }
 
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         scaleGestureDetector.onTouchEvent(event);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_UP:
+                if (thumbnailOrDetail == -1) {
+                    showDetail((int) event.getX(), (int) event.getY());
+                } else {
+                    showThumbnail();
+                }
+                break;
+        }
 //        LogShower.custom("liyongzhi", "ECGView", "onTouchEvent", "get into onTouchEvent");
         return true;
     }
+
+
     @Override
     public boolean isInEditMode() {
         return true;
@@ -359,9 +404,11 @@ public class ECGView extends View {
     public void setChannel(ArrayList<Queue> channel) {
         this.channel = channel;
         this.inputChannelNum = channel.size();
-        if (subViewList != null && subViewList.size() == 0) {
-            createSubView();
-        }
+
+    }
+
+    public void setText(ArrayList<String> text) {
+        this.text = text;
     }
 
 
