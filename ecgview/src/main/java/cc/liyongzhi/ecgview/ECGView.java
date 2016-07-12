@@ -1,8 +1,10 @@
 package cc.liyongzhi.ecgview;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
@@ -52,6 +54,17 @@ public class ECGView extends View {
     private int currentPageStartIndex = 0;
     private int currentPageLeftSubViewNumber = 0;
     private int inputChannelNum = 1; //
+    private DisplayMetrics displayMetrics;
+    private float pixelPerMillimeter;
+
+
+    Runnable refreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            invalidate();
+            postDelayed(refreshRunnable, 1000/fps);
+        }
+    };
 
 
 
@@ -72,7 +85,11 @@ public class ECGView extends View {
 
     private void init(Context context) {
 
-
+        //get pixelPerMillimeter
+        displayMetrics = new DisplayMetrics();
+        ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        pixelPerMillimeter = (float)(displayMetrics.xdpi / 2.54 /10);
+        LogShower.custom("liyongzhi", "ECGView", "init", "pixelPerMillimeter = " + pixelPerMillimeter);
 
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.OnScaleGestureListener() {
             @Override
@@ -181,7 +198,7 @@ public class ECGView extends View {
             if (isAspectRatioSet) {
                 subHeight = (int)(subWidth / aspectRatio);
             } else {
-                subHeight = mainViewHeight / ((currentPageLeftSubViewNumber + 1)/ columnSubViewNum);
+                subHeight = mainViewHeight / ((currentPageLeftSubViewNumber + columnSubViewNum - 1)/ columnSubViewNum);
             }
             int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
             int offsetStartPointY = ((i - currentPageStartIndex) / columnSubViewNum) * subHeight;
@@ -268,6 +285,14 @@ public class ECGView extends View {
     }
 
 
+    private void queueToArray() {
+        int pointPerFresh = drawPointSpeed / fps;
+    }
+
+    public void start() {
+        queueToArray();
+        post(refreshRunnable);
+    }
 
 
     @Override
@@ -276,7 +301,10 @@ public class ECGView extends View {
 //        LogShower.custom("liyongzhi", "ECGView", "onTouchEvent", "get into onTouchEvent");
         return true;
     }
-
+    @Override
+    public boolean isInEditMode() {
+        return true;
+    }
     @Override
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
         super.onSizeChanged(xNew, yNew, xOld, yOld);
@@ -293,17 +321,12 @@ public class ECGView extends View {
     public void setChannel(ArrayList<Queue> channel) {
         this.channel = channel;
         this.inputChannelNum = channel.size();
-
-
         if (subViewList != null && subViewList.size() == 0) {
             createSubView();
         }
     }
 
-    @Override
-    public boolean isInEditMode() {
-        return true;
-    }
+
 
     public void setZoomAllowed(boolean zoomAllowed) {
         isZoomAllowed = zoomAllowed;

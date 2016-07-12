@@ -28,12 +28,13 @@ public class ECGSubView {
 
     public void draw(Canvas canvas) {
         //draw border
-        Paint paint = new Paint();
-        paint.setAntiAlias(true);
-        paint.setColor(Color.BLACK);
-        paint.setStyle(Paint.Style.STROKE);
-        canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, paint);
+        Paint borderPaint = new Paint();
+        borderPaint.setAntiAlias(true);
+        borderPaint.setColor(Color.BLACK);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, borderPaint);
         //draw wave
+        Paint wavePaint = new Paint();
 
     }
 
