@@ -1,6 +1,8 @@
 package cc.liyongzhi.ecgview;
 
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 
 import java.util.Queue;
 
@@ -15,21 +17,30 @@ public class ECGSubView {
     private int subWidth = 0;
     private int parentWidth = 0;
     private int parentHeight = 0;
-
-
     private Queue dataChannel;
+
+
+
 
     public ECGSubView(Queue dataChannel) {
         this.dataChannel = dataChannel;
     }
 
     public void draw(Canvas canvas) {
+        //draw border
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, paint);
+        //draw wave
+
     }
 
     public void setOffsetStartPoint(int offsetStartPointX, int offsetStartPointY) {
         this.offsetStartPointX = offsetStartPointX;
         this.offsetStartPointY = offsetStartPointY;
-    }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
 
     public void setSubHeight(int subHeight) {
         this.subHeight = subHeight;

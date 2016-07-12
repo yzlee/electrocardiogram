@@ -10,6 +10,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import cc.liyongzhi.ecgview.ECGView;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -25,7 +30,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
+        ECGView view = (ECGView) findViewById(R.id.ecg_view);
+        view.setSubViewNum(6);
+        ArrayList<Queue> arrayList = new ArrayList<>();
+        for (int i = 0; i < 12; i ++) {
+            arrayList.add(new LinkedBlockingQueue());
+        }
+        view.setChannel(arrayList);
 
 
 /*

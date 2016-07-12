@@ -10,6 +10,8 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Queue;
 
+import cc.liyongzhi.androidlogsaver.log.LogShower;
+
 /**
  * Created by lee on 7/7/16.
  */
@@ -70,9 +72,7 @@ public class ECGView extends View {
 
     private void init(Context context) {
 
-        if (subViewList != null && subViewList.size() == 0) {
-            createSubView();
-        }
+
 
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.OnScaleGestureListener() {
             @Override
@@ -80,14 +80,17 @@ public class ECGView extends View {
                 scaleFactor *= detector.getScaleFactor();
 //                LogShower.custom("liyongzhi", "ECGView", "onScale", "detector.getScaleFactor() = " + detector.getScaleFactor());
                 if (scaleFactor > 1.2) {
+                    LogShower.custom("liyongzhi", "ECGView", "onScale", "scaleFactor > 1.2");
                     if (isColumnSubViewNumSet && subViewNum - columnSubViewNum >= minSubViewNum) {
                         subViewNum -= columnSubViewNum;
+                        LogShower.custom("liyongzhi", "ECGView", "onScale", "subViewNum = " + subViewNum);
                         subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
                     if (!isColumnSubViewNumSet && subViewNum > minSubViewNum) {
                         subViewNum--;
+                        LogShower.custom("liyongzhi", "ECGView", "onScale", "subViewNum = " + subViewNum);
                         subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
@@ -178,7 +181,7 @@ public class ECGView extends View {
             if (isAspectRatioSet) {
                 subHeight = (int)(subWidth / aspectRatio);
             } else {
-                subHeight = mainViewHeight / (currentPageLeftSubViewNumber / columnSubViewNum + 1);
+                subHeight = mainViewHeight / ((currentPageLeftSubViewNumber + 1)/ columnSubViewNum);
             }
             int offsetStartPointX = ((i - currentPageStartIndex) % columnSubViewNum) * subWidth;
             int offsetStartPointY = ((i - currentPageStartIndex) / columnSubViewNum) * subHeight;
@@ -290,6 +293,16 @@ public class ECGView extends View {
     public void setChannel(ArrayList<Queue> channel) {
         this.channel = channel;
         this.inputChannelNum = channel.size();
+
+
+        if (subViewList != null && subViewList.size() == 0) {
+            createSubView();
+        }
+    }
+
+    @Override
+    public boolean isInEditMode() {
+        return true;
     }
 
     public void setZoomAllowed(boolean zoomAllowed) {
