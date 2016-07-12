@@ -31,8 +31,8 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         ECGView view = (ECGView) findViewById(R.id.ecg_view);
-        view.setSubViewNum(6);
-//        view.setColumnSubViewNum(2);
+        view.setSubViewNum(12);
+        view.setColumnSubViewNum(3);
         ArrayList<Queue> arrayList = new ArrayList<>();
         for (int i = 0; i < 12; i ++) {
             arrayList.add(new LinkedBlockingQueue());

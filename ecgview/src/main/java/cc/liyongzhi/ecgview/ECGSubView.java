@@ -32,6 +32,7 @@ public class ECGSubView {
         borderPaint.setAntiAlias(true);
         borderPaint.setColor(Color.BLACK);
         borderPaint.setStrokeWidth(1);
+
         borderPaint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, borderPaint);
         //draw wave

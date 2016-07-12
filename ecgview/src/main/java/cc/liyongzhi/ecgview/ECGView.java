@@ -56,6 +56,7 @@ public class ECGView extends View {
     private int inputChannelNum = 1; //
     private DisplayMetrics displayMetrics;
     private float pixelPerMillimeter;
+    private int originColumnSubViewNum = 2;
 
 
     Runnable refreshRunnable = new Runnable() {
@@ -99,7 +100,13 @@ public class ECGView extends View {
                 if (scaleFactor > 1.2) {
                     LogShower.custom("liyongzhi", "ECGView", "onScale", "scaleFactor > 1.2");
                     if (isColumnSubViewNumSet && subViewNum - columnSubViewNum >= minSubViewNum) {
-                        subViewNum -= columnSubViewNum;
+
+                        if (subViewNum / columnSubViewNum < columnSubViewNum && columnSubViewNum > 1) {
+                            subViewNum -= subViewNum / columnSubViewNum;
+                            columnSubViewNum --;
+                        } else {
+                            subViewNum -= columnSubViewNum;
+                        }
                         LogShower.custom("liyongzhi", "ECGView", "onScale", "subViewNum = " + subViewNum);
                         subViewNumChanged();
                         invalidate();
@@ -116,6 +123,14 @@ public class ECGView extends View {
                 if (scaleFactor < 0.85) {
                     if (isColumnSubViewNumSet && subViewNum + columnSubViewNum <= maxSubViewNum) {
                         subViewNum += columnSubViewNum;
+
+                        if (subViewNum / columnSubViewNum >= columnSubViewNum && columnSubViewNum < originColumnSubViewNum) {
+                            subViewNum += subViewNum / columnSubViewNum;
+                            columnSubViewNum ++;
+                        } else {
+                            subViewNum += columnSubViewNum;
+                        }
+
                         subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
@@ -185,9 +200,10 @@ public class ECGView extends View {
 
     private void changeSubViewLayout() {
         ECGSubView subview = null;
+        int tmp = currentPageLeftSubViewNumber % columnSubViewNum;
         for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
             subview = subViewList.get(i);
-            int tmp = currentPageLeftSubViewNumber % columnSubViewNum;
+
             float subWidth = 0;
             float subHeight = 0;
             if (i < currentPageLeftSubViewNumber + currentPageStartIndex - tmp) {
@@ -206,31 +222,36 @@ public class ECGView extends View {
             subview.setParentHeight(mainViewHeight);
             subview.setParentWidth(mainViewWidth);
             subview.setOffsetStartPoint(offsetStartPointX, offsetStartPointY);
-            //get the precise pixel address of sub-view's height.
-            if (i - currentPageStartIndex >= currentPageLeftSubViewNumber - columnSubViewNum) {
+/*            //get the precise pixel address of sub-view's height.
+            if (i - currentPageStartIndex >= currentPageLeftSubViewNumber - tmp) {
                 subview.setSubHeight(mainViewHeight - offsetStartPointY);
             }
 
-            if (i - currentPageStartIndex >= columnSubViewNum) {
-                ECGSubView preHSubview = subViewList.get(i - columnSubViewNum);
-                preHSubview.setSubHeight(offsetStartPointY - preHSubview.getOffsetStartPointY());
+            if (i - currentPageStartIndex >= columnSubViewNum && (i - currentPageStartIndex) % columnSubViewNum == 0) {
+                for (int j = i - columnSubViewNum; j < i; j++) {
+                    ECGSubView preHSubview = subViewList.get(j);
+                    preHSubview.setSubHeight(offsetStartPointY - preHSubview.getOffsetStartPointY());
+                }
+            }*/
+        }
+        int totalLineNum = tmp == 0 ? currentPageLeftSubViewNumber / columnSubViewNum : currentPageLeftSubViewNumber / columnSubViewNum + 1;
+        for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
+            int lineNum = i / columnSubViewNum + 1;
+            subview = subViewList.get(i);
+            int thisLineOffsetStartPointY = subview.getOffsetStartPointY();
+            if (lineNum < totalLineNum) {
+                int nextLineOffsetStartPointY = subViewList.get(lineNum * columnSubViewNum).getOffsetStartPointY();
+                subview.setSubHeight(nextLineOffsetStartPointY - thisLineOffsetStartPointY);
+            } else {
+                subview.setSubHeight(mainViewHeight - thisLineOffsetStartPointY);
             }
-/*
-            //get the precise pixel address of sub-view's width.
-            if ((i - currentPageStartIndex) % columnSubViewNum == columnSubViewNum - 1) {
-                subview.setSubWidth(mainViewWidth - offsetStartPointX);
-            } else if ((i - currentPageStartIndex) % columnSubViewNum >= 1) {
-                ECGSubView preWSubview = subViewList.get((i - currentPageStartIndex) % columnSubViewNum - 1);
-                preWSubview.setSubWidth(offsetStartPointX - preWSubview.getOffsetStartPointX());
-            }
-*/
-
         }
     }
 
     private void drawCurrentPage(Canvas canvas) {
         for (int i = currentPageStartIndex; i < currentPageLeftSubViewNumber + currentPageStartIndex; i++) {
-            subViewList.get(i).draw(canvas);
+            ECGSubView subView = subViewList.get(i);
+            subView.draw(canvas);
         }
     }
 
@@ -299,7 +320,6 @@ public class ECGView extends View {
         }
 
         drawCurrentPage(canvas);
-
     }
 
 
@@ -384,6 +404,7 @@ public class ECGView extends View {
 
     public void setColumnSubViewNum(int columnSubViewNum) {
         this.columnSubViewNum = columnSubViewNum;
+        this.originColumnSubViewNum = columnSubViewNum;
         this.isColumnSubViewNumSet = true;
     }
 
