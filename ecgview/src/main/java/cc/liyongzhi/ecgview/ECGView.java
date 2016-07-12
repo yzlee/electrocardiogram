@@ -202,11 +202,29 @@ public class ECGView extends View {
             }
             int offsetStartPointX = (int) (((i - currentPageStartIndex) % columnSubViewNum) * subWidth);
             int offsetStartPointY = (int) (((i - currentPageStartIndex) / columnSubViewNum) * subHeight);
-            subview.setSubWidth(subWidth);
-            subview.setSubHeight(subHeight);
+            subview.setSubWidth((int)subWidth);
             subview.setParentHeight(mainViewHeight);
             subview.setParentWidth(mainViewWidth);
             subview.setOffsetStartPoint(offsetStartPointX, offsetStartPointY);
+            //get the precise pixel address of sub-view's height.
+            if (i - currentPageStartIndex >= currentPageLeftSubViewNumber - columnSubViewNum) {
+                subview.setSubHeight(mainViewHeight - offsetStartPointY);
+            }
+
+            if (i - currentPageStartIndex >= columnSubViewNum) {
+                ECGSubView preHSubview = subViewList.get(i - columnSubViewNum);
+                preHSubview.setSubHeight(offsetStartPointY - preHSubview.getOffsetStartPointY());
+            }
+/*
+            //get the precise pixel address of sub-view's width.
+            if ((i - currentPageStartIndex) % columnSubViewNum == columnSubViewNum - 1) {
+                subview.setSubWidth(mainViewWidth - offsetStartPointX);
+            } else if ((i - currentPageStartIndex) % columnSubViewNum >= 1) {
+                ECGSubView preWSubview = subViewList.get((i - currentPageStartIndex) % columnSubViewNum - 1);
+                preWSubview.setSubWidth(offsetStartPointX - preWSubview.getOffsetStartPointX());
+            }
+*/
+
         }
     }
 

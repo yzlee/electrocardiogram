@@ -13,8 +13,8 @@ public class ECGSubView {
 
     private int offsetStartPointX = 0;
     private int offsetStartPointY = 0;
-    private float subHeight = 0;
-    private float subWidth = 0;
+    private int subHeight = 0;
+    private int subWidth = 0;
     private int parentWidth = 0;
     private int parentHeight = 0;
     private Queue dataChannel;
@@ -31,6 +31,7 @@ public class ECGSubView {
         Paint borderPaint = new Paint();
         borderPaint.setAntiAlias(true);
         borderPaint.setColor(Color.BLACK);
+        borderPaint.setStrokeWidth(1);
         borderPaint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, borderPaint);
         //draw wave
@@ -43,11 +44,11 @@ public class ECGSubView {
         this.offsetStartPointY = offsetStartPointY;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 }
 
-    public void setSubHeight(float subHeight) {
+    public void setSubHeight(int subHeight) {
         this.subHeight = subHeight;
     }
 
-    public void setSubWidth(float subWidth) {
+    public void setSubWidth(int subWidth) {
         this.subWidth = subWidth;
     }
 
@@ -57,5 +58,13 @@ public class ECGSubView {
 
     public void setParentHeight(int parentHeight) {
         this.parentHeight = parentHeight;
+    }
+
+    public int getOffsetStartPointX() {
+        return offsetStartPointX;
+    }
+
+    public int getOffsetStartPointY() {
+        return offsetStartPointY;
     }
 }
