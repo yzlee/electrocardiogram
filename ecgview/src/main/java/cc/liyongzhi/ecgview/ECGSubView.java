@@ -19,6 +19,11 @@ public class ECGSubView {
     private int parentHeight = 0;
     private String text = "";
     private Queue dataChannel;
+    private int[] data;
+    private int endPoint = 0; // end point is the last point's next point;
+    private float scaling = 1.0f;
+    private int emptyDataAmount = 5;
+
 
 
 
@@ -37,7 +42,18 @@ public class ECGSubView {
         borderPaint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, borderPaint);
         //draw wave
-        Paint wavePaint = new Paint();
+        if (data != null) {
+            Paint wavePaint = new Paint();
+            wavePaint.setColor(Color.RED);
+            int dataLength = data.length;
+            float step = (float) subWidth / dataLength;
+            int offsetY = subHeight / 2;
+            for (int i = 1; i < dataLength; i++) {
+                if (i < endPoint || i > endPoint + emptyDataAmount) {
+                    canvas.drawLine(step * (i - 1) + offsetStartPointX, data[i - 1] * scaling + offsetY + offsetStartPointY, step * i + offsetStartPointX, data[i] * scaling + offsetY + + offsetStartPointY, wavePaint);
+                }
+            }
+        }
 
         //draw number
         Paint textPaint = new Paint();
@@ -80,9 +96,24 @@ public class ECGSubView {
         return offsetStartPointX;
     }
 
+    public int getSubWidth() {
+        return subWidth;
+    }
+
     public int getOffsetStartPointY() {
         return offsetStartPointY;
     }
 
+    public void setData(int[] data, int endPoint) {
+        this.data = data;
+        this.endPoint = endPoint;
+    }
 
+    public int[] getData() {
+        return data;
+    }
+
+    public int getEndPoint() {
+        return endPoint;
+    }
 }

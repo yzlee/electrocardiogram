@@ -38,6 +38,7 @@ public class ECGView extends View {
     private double aspectRatio = 4/3; //width / height
     private ArrayList<Queue> channel = new ArrayList<>();
     private ArrayList<String> text = new ArrayList<>();
+    private int secsSyncTimeInterval = 5000;
 
 
     //Used by view;
@@ -59,13 +60,58 @@ public class ECGView extends View {
     private float pixelPerMillimeter;
     private int originColumnSubViewNum = 2;
     private int thumbnailOrDetail = -1; // -1 is thumbnail
+    private Context context;
+    private long lastTimeMillis = 0;
+    private long lastTimeSecs = 0;
+    private int pointNumUntilSecSync = 0;
+    private ArrayList<int[]> dataToSubViewList = new ArrayList<>();
 
 
     Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
             invalidate();
-            postDelayed(refreshRunnable, 1000/fps);
+
+            postDelayed(refreshRunnable, 1000 / fps);
+
+        }
+    };
+
+    Runnable drawDataRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            long currentTime = System.currentTimeMillis();
+
+            long millisTimeInterval = currentTime - lastTimeMillis;
+            long secsTimeTimeInterval = currentTime - lastTimeSecs;
+
+
+            if (secsTimeTimeInterval > secsSyncTimeInterval * 10) {
+                lastTimeMillis = currentTime;
+                for (Queue queue : channel) {
+                    queue.clear();
+                }
+                pointNumUntilSecSync = 0;
+                lastTimeSecs = currentTime;
+            } else if (secsTimeTimeInterval > secsSyncTimeInterval) {
+                lastTimeSecs = currentTime;
+
+                int drawPointNumThisInterval = (int) (secsSyncTimeInterval / 1000.0 * 250) - pointNumUntilSecSync;
+
+
+                pointNumUntilSecSync = 0;
+            }
+
+            lastTimeMillis = currentTime;
+
+            if (millisTimeInterval < 1000) {
+                int drawPointNumThisInterval = (int) (millisTimeInterval / 1000.0 * 250);
+                queueToArrayByNum(drawPointNumThisInterval);
+                pointNumUntilSecSync += drawPointNumThisInterval;
+            }
+
+            postDelayed(drawDataRunnable, 1000 / fps);
         }
     };
 
@@ -88,7 +134,7 @@ public class ECGView extends View {
 
     private void init(Context context) {
 
-
+        this.context = context;
         //get pixelPerMillimeter
         displayMetrics = new DisplayMetrics();
         ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -188,7 +234,12 @@ public class ECGView extends View {
     }
 
     private void recreateSubView() {
-        changeSubViewLayout();
+        if (thumbnailOrDetail == -1) {
+            changeSubViewLayout();
+        } else {
+            changeCertainSubViewLayout(thumbnailOrDetail);
+        }
+
     }
 
 
@@ -200,6 +251,16 @@ public class ECGView extends View {
             }
             subViewList.add(subView);
         }
+    }
+
+    private void changeCertainSubViewLayout(int id) {
+        ECGSubView subView = subViewList.get(id);
+        subView.setSubHeight(mainViewHeight);
+        subView.setSubWidth(mainViewWidth);
+        subView.setOffsetStartPoint(0,0);
+        int[] data = new int[(int) (subViewList.get(id).getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
+        subView.setData(data, 0);
+
     }
 
     private void changeSubViewLayout() {
@@ -249,6 +310,8 @@ public class ECGView extends View {
             } else {
                 subview.setSubHeight(mainViewHeight - thisLineOffsetStartPointY);
             }
+            int[] data = new int[(int) (subview.getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
+            subview.setData(data, 0);
         }
     }
 
@@ -261,9 +324,6 @@ public class ECGView extends View {
 
     private void drawDetail(Canvas canvas) {
         ECGSubView subView = subViewList.get(thumbnailOrDetail);
-        subView.setSubHeight(mainViewHeight);
-        subView.setSubWidth(mainViewWidth);
-        subView.setOffsetStartPoint(0,0);
         subView.draw(canvas);
     }
 
@@ -331,7 +391,6 @@ public class ECGView extends View {
             subViewNumChanged();
         }
 
-
         if (thumbnailOrDetail == -1) {
             drawCurrentPage(canvas);
         } else {
@@ -347,23 +406,35 @@ public class ECGView extends View {
                 invalidate();
             }
         }
+        subViewNumChanged();
     }
 
     private void showThumbnail() {
-        subViewNumChanged();
+
         thumbnailOrDetail = -1;
+        subViewNumChanged();
     }
 
-    private void queueToArray() {
+    private void queueToArrayByNum(int num) {
         int pointPerFresh = drawPointSpeed / fps;
+
+        if (thumbnailOrDetail == -1) {
+            for (int i = 0; i < inputChannelNum; i++) {
+                Queue queue = channel.get(i);
+                ECGSubView subView = subViewList.get(i);
+
+            }
+        }
     }
 
     public void start() {
-        queueToArray();
-        post(refreshRunnable);
+
+
         if (subViewList != null && subViewList.size() == 0) {
             createSubView();
         }
+        post(drawDataRunnable);
+        post(refreshRunnable);
     }
 
 
