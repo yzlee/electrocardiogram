@@ -422,7 +422,10 @@ public class ECGView extends View {
             for (int i = 0; i < inputChannelNum; i++) {
                 Queue queue = channel.get(i);
                 ECGSubView subView = subViewList.get(i);
-
+                int[] data = subView.getData();
+                int endPoint = subView.getEndPoint();
+                endPoint = endPoint + num >= data.length ? (endPoint + num) % data.length : endPoint + num;
+                subView.setData(data, endPoint);
             }
         }
     }
