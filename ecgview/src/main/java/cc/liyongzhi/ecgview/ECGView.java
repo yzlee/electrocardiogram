@@ -369,7 +369,7 @@ public class ECGView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        scaleGestureDetector.onTouchEvent(event);
+        LogShower.custom("liyongzhi", "ECGView", "onTouchEvent", "event.getPointerCount" + event.getPointerCount());
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
                 if (thumbnailOrDetail == -1) {
@@ -377,8 +377,12 @@ public class ECGView extends View {
                 } else {
                     showThumbnail();
                 }
-                break;
+                return true;
+
         }
+//        scaleGestureDetector.onTouchEvent(event);
+
+
 //        LogShower.custom("liyongzhi", "ECGView", "onTouchEvent", "get into onTouchEvent");
         return true;
     }
