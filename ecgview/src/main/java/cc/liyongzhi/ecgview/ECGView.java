@@ -427,6 +427,13 @@ public class ECGView extends View {
                 endPoint = endPoint + num >= data.length ? (endPoint + num) % data.length : endPoint + num;
                 subView.setData(data, endPoint);
             }
+        } else {
+            Queue queue = channel.get(thumbnailOrDetail);
+            ECGSubView subView = subViewList.get(thumbnailOrDetail);
+            int[] data = subView.getData();
+            int endPoint = subView.getEndPoint();
+            endPoint = endPoint + num >= data.length ? (endPoint + num) % data.length : endPoint + num;
+            subView.setData(data, endPoint);
         }
     }
 
