@@ -23,6 +23,9 @@ public class ECGSubView {
     private int endPoint = 0; // end point is the last point's next point;
     private float scaling = 1.0f;
     private int emptyDataAmount = 5;
+    private boolean drawBackground;
+    private float pixelPerMillimeter;
+    private float gridInterval;
 
 
 
@@ -33,6 +36,25 @@ public class ECGSubView {
     }
 
     public void draw(Canvas canvas) {
+
+        //draw background
+        Paint backgroundPaint = new Paint();
+        backgroundPaint.setColor(Color.rgb(255, 182, 189));
+        if (drawBackground) {
+            float pixelPerGridInterval = pixelPerMillimeter * gridInterval;
+            int i = 1;
+            while (pixelPerGridInterval * i < subHeight ) {
+                canvas.drawLine(0, pixelPerGridInterval * i, subWidth, pixelPerGridInterval * i, backgroundPaint);
+                i++;
+            }
+            int j = 1;
+            while (pixelPerGridInterval * j < subWidth) {
+                canvas.drawLine(pixelPerGridInterval * j, 0, pixelPerGridInterval * j, subHeight, backgroundPaint);
+                j++;
+            }
+
+        }
+
         //draw border
         Paint borderPaint = new Paint();
         borderPaint.setAntiAlias(true);
@@ -44,7 +66,7 @@ public class ECGSubView {
         //draw wave
         if (data != null) {
             Paint wavePaint = new Paint();
-            wavePaint.setColor(Color.RED);
+            wavePaint.setColor(Color.rgb(00, 128, 00));
             int dataLength = data.length;
             float step = (float) subWidth / dataLength;
             int offsetY = subHeight / 2;
@@ -58,7 +80,18 @@ public class ECGSubView {
         //draw number
         Paint textPaint = new Paint();
         textPaint.setColor(Color.BLACK);
+        //text size
+        float size = 12;
+        size = subWidth / 18;
+        if (size < 12) {
+            size = 12;
+        } else if (size > 60) {
+            size = 60;
+        }
+        textPaint.setTextSize(size);
         canvas.drawText(text, offsetStartPointX + subWidth / 8, offsetStartPointY + subHeight / 5, textPaint);
+
+
 
     }
 
@@ -115,5 +148,17 @@ public class ECGSubView {
 
     public int getEndPoint() {
         return endPoint;
+    }
+
+    public void setDrawBackground(boolean drawBackground) {
+        this.drawBackground = drawBackground;
+    }
+
+    public void setPixelPerMillimeter(float pixelPerMillimeter) {
+        this.pixelPerMillimeter = pixelPerMillimeter;
+    }
+
+    public void setGridInterval(float gridInterval) {
+        this.gridInterval = gridInterval;
     }
 }

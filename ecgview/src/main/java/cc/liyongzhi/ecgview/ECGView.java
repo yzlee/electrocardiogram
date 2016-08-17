@@ -39,6 +39,7 @@ public class ECGView extends View {
     private ArrayList<Queue> channel = new ArrayList<>();
     private ArrayList<String> text = new ArrayList<>();
     private int secsSyncTimeInterval = 5000;
+    private float gridInterval = 5; // 5mm
 
 
     //Used by view;
@@ -257,6 +258,9 @@ public class ECGView extends View {
         ECGSubView subView = subViewList.get(id);
         subView.setSubHeight(mainViewHeight);
         subView.setSubWidth(mainViewWidth);
+        subView.setPixelPerMillimeter(pixelPerMillimeter);
+        subView.setGridInterval(gridInterval);
+        subView.setDrawBackground(true);
         subView.setOffsetStartPoint(0,0);
         int[] data = new int[(int) (subViewList.get(id).getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
         subView.setData(data, 0);
@@ -287,6 +291,7 @@ public class ECGView extends View {
             subview.setParentHeight(mainViewHeight);
             subview.setParentWidth(mainViewWidth);
             subview.setOffsetStartPoint(offsetStartPointX, offsetStartPointY);
+            subview.setDrawBackground(false);
 /*            //get the precise pixel address of sub-view's height.
             if (i - currentPageStartIndex >= currentPageLeftSubViewNumber - tmp) {
                 subview.setSubHeight(mainViewHeight - offsetStartPointY);
