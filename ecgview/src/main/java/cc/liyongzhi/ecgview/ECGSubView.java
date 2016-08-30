@@ -4,8 +4,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 
-import java.util.Queue;
-
 /**
  * Created by lee on 7/8/16.
  */
@@ -18,28 +16,53 @@ public class ECGSubView {
     private int parentWidth = 0;
     private int parentHeight = 0;
     private String text = "";
-    private Queue dataChannel;
-    private int[] data;
-    private int endPoint = 0; // end point is the last point's next point;
-    private float scaling = 1.0f;
+    private short[] data;
+    private int nextStartPoint = 0; // end point is the last point's next point;
+    private float scaling = 0.5f;
     private int emptyDataAmount = 5;
     private boolean drawBackground;
     private float pixelPerMillimeter;
     private float gridInterval;
+    private short[] dataForDraw;
+    private int drawPaperSpeed = 25; // mm/s
+    private int drawPointSpeed = 250; // point/s
+    private float pointPerPixel;
+    private final float POINT_PER_PIXEL;
+    private Paint borderPaint = new Paint();
+    private Paint backgroundPaint = new Paint();
+    private Paint wavePaint = new Paint();
+    private float step = 1;
+    private int strokeWidth = 1;
+    private boolean thumbnailMode = true;
+    private float hScale = 2.0f; //horizontal scaling
 
 
 
+    public ECGSubView(int drawPaperSpeed, int drawPointSpeed, float pixelPerMillimeter) {
+        this.drawPointSpeed = drawPointSpeed;
+        this.drawPaperSpeed = drawPaperSpeed;
+        this.pixelPerMillimeter = pixelPerMillimeter;
 
 
-    public ECGSubView(Queue dataChannel) {
-        this.dataChannel = dataChannel;
+        int pointPerMillimeter = drawPointSpeed / drawPaperSpeed;
+        pointPerPixel = pointPerMillimeter / pixelPerMillimeter;
+        POINT_PER_PIXEL = pointPerPixel;
+
+        //border painter
+        borderPaint.setAntiAlias(true);
+        borderPaint.setColor(Color.BLACK);
+        borderPaint.setStrokeWidth(1);
+        borderPaint.setStyle(Paint.Style.STROKE);
+        //background painter
+        backgroundPaint.setColor(Color.rgb(255, 182, 189));
+        //wave painter
+        wavePaint.setStrokeWidth(strokeWidth);
+        wavePaint.setColor(Color.rgb(0, 128, 0));
     }
 
     public void draw(Canvas canvas) {
 
         //draw background
-        Paint backgroundPaint = new Paint();
-        backgroundPaint.setColor(Color.rgb(255, 182, 189));
         if (drawBackground) {
             float pixelPerGridInterval = pixelPerMillimeter * gridInterval;
             int i = 1;
@@ -52,30 +75,50 @@ public class ECGSubView {
                 canvas.drawLine(pixelPerGridInterval * j, 0, pixelPerGridInterval * j, subHeight, backgroundPaint);
                 j++;
             }
-
         }
 
         //draw border
-        Paint borderPaint = new Paint();
-        borderPaint.setAntiAlias(true);
-        borderPaint.setColor(Color.BLACK);
-        borderPaint.setStrokeWidth(1);
-
-        borderPaint.setStyle(Paint.Style.STROKE);
         canvas.drawRect(offsetStartPointX, offsetStartPointY, offsetStartPointX + subWidth, offsetStartPointY + subHeight, borderPaint);
+
+
         //draw wave
-        if (data != null) {
+        if (dataForDraw != null) {
+            int offsetY = subHeight / 2;
+            for (int i = 0; i < dataForDraw.length - pointPerPixel; i += pointPerPixel) {
+
+                int emptyLength = i - nextStartPoint;
+
+                if (emptyLength < 6 * pointPerPixel  && emptyLength > 0) {
+                    continue;
+                }
+
+                //thumbnail adjust screen
+                float heightFirst = dataForDraw[i] * scaling;
+                float heightNext = dataForDraw[i + (int)pointPerPixel] * scaling;
+                if (thumbnailMode && Math.abs(heightNext) > subHeight / 2) {
+                    scaling *= 0.8;
+                    heightNext *= scaling;
+                }
+                if (Math.abs(heightNext) > subHeight / 2) {
+                    heightNext = heightNext > 0 ? subHeight / 2 : -subHeight / 2;
+                }
+
+                canvas.drawLine(step * i + offsetStartPointX, heightFirst + offsetStartPointY + offsetY, step * (i + pointPerPixel) + offsetStartPointX, heightNext + offsetStartPointY + offsetY, wavePaint);
+            }
+        }
+
+/*        if (data != null) {
             Paint wavePaint = new Paint();
-            wavePaint.setColor(Color.rgb(00, 128, 00));
+            wavePaint.setColor(Color.rgb(0, 128, 0));
             int dataLength = data.length;
             float step = (float) subWidth / dataLength;
             int offsetY = subHeight / 2;
             for (int i = 1; i < dataLength; i++) {
-                if (i < endPoint || i > endPoint + emptyDataAmount) {
+                if (i < nextStartPoint || i > nextStartPoint + emptyDataAmount) {
                     canvas.drawLine(step * (i - 1) + offsetStartPointX, data[i - 1] * scaling + offsetY + offsetStartPointY, step * i + offsetStartPointX, data[i] * scaling + offsetY + + offsetStartPointY, wavePaint);
                 }
             }
-        }
+        }*/
 
         //draw number
         Paint textPaint = new Paint();
@@ -83,16 +126,38 @@ public class ECGSubView {
         //text size
         float size = 12;
         size = subWidth / 18;
-        if (size < 12) {
-            size = 12;
+        if (size < 8) {
+            size = 8;
         } else if (size > 60) {
             size = 60;
         }
         textPaint.setTextSize(size);
         canvas.drawText(text, offsetStartPointX + subWidth / 8, offsetStartPointY + subHeight / 5, textPaint);
+    }
 
+    /**
+     * add child array to parent array.
+     * @param child child array
+     * @param parent parent array
+     * @param startPoint add from startPoint
+     * @return  which is the new parent and next start Point, which can be as startPoint next time.
+     */
+    private int addArrayToArray(short[] parent, short[] child, int startPoint) {
+        int childLength = child.length;
+        int parentLength = parent.length;
 
+        int num = (childLength + startPoint) / parentLength;
+        int left = (childLength + startPoint) % parentLength;
 
+        for (int i = 0; i < parentLength; i++) {
+            if (i < left && childLength - left + i >= 0) {
+                parent[i] = child[childLength - left + i];
+            }
+            if (i < parentLength - left && childLength - parentLength + i >= 0){
+                parent[i + left] = child[childLength - parentLength + i];
+            }
+        }
+        return left;
     }
 
     public boolean isBelongToMe(int x, int y) {
@@ -109,8 +174,24 @@ public class ECGSubView {
         this.subHeight = subHeight;
     }
 
+    public void setThumbnailMode(boolean thumbnailMode) {
+        if (thumbnailMode) {
+            pointPerPixel = POINT_PER_PIXEL * hScale;
+        } else {
+            pointPerPixel = POINT_PER_PIXEL;
+        }
+        setSubWidth(subWidth);
+    }
+
     public void setSubWidth(int subWidth) {
-        this.subWidth = subWidth;
+        this.subWidth = subWidth; //pixel number of one page
+        int totalPoint = (int)(subWidth * pointPerPixel);
+        short[] newDataForDraw = new short[totalPoint];
+        if (dataForDraw != null) {
+            addArrayToArray(newDataForDraw, dataForDraw, 0);
+        }
+        dataForDraw = newDataForDraw;
+        step = (float) subWidth / totalPoint;
     }
 
     public void setParentWidth(int parentWidth) {
@@ -137,28 +218,40 @@ public class ECGSubView {
         return offsetStartPointY;
     }
 
-    public void setData(int[] data, int endPoint) {
+/*    public void setData(short[] data, int nextStartPoint) {
         this.data = data;
-        this.endPoint = endPoint;
+        this.nextStartPoint = nextStartPoint;
+    }*/
+
+    public void addData(short[] data) {
+        nextStartPoint = addArrayToArray(dataForDraw, data, nextStartPoint);
+
     }
 
-    public int[] getData() {
+    public void setStrokeWidth(int strokeWidth) {
+        this.strokeWidth = strokeWidth;
+        wavePaint.setStrokeWidth(strokeWidth);
+    }
+
+    public short[] getData() {
         return data;
     }
 
-    public int getEndPoint() {
-        return endPoint;
+    public void setScaling(float scaling) {
+        this.scaling = scaling;
+    }
+
+    public int getNextStartPoint() {
+        return nextStartPoint;
     }
 
     public void setDrawBackground(boolean drawBackground) {
         this.drawBackground = drawBackground;
     }
 
-    public void setPixelPerMillimeter(float pixelPerMillimeter) {
-        this.pixelPerMillimeter = pixelPerMillimeter;
-    }
 
     public void setGridInterval(float gridInterval) {
         this.gridInterval = gridInterval;
     }
+
 }

@@ -3,14 +3,18 @@ package cc.liyongzhi.ecgview;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.os.Handler;
+import android.text.LoginFilter;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
 import java.util.ArrayList;
-import java.util.Queue;
+import java.util.Arrays;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import cc.liyongzhi.androidlogsaver.log.LogShower;
 
@@ -28,6 +32,7 @@ public class ECGView extends View {
     private int maxSubViewNum = 12;
     private int minSubViewNum = 1;
     private int drawPointSpeed = 250; //point per second, it determined the speed of drawing
+    private int drawPaperSpeed = 25; //millimeter per second
     private int fps = 25; // frames per second, it determined if our eyes feeling comfortable.
     private int pointPerView = 500; //(the index is begin form 0) usefulPoint = (pointPerView - 1) / (pixelPerView - 1) * currentPixel
     private int YScale = 1;
@@ -36,11 +41,15 @@ public class ECGView extends View {
     private int defaultLead = 1;
     private int columnSubViewNum = 2;
     private double aspectRatio = 4/3; //width / height
-    private ArrayList<Queue> channel = new ArrayList<>();
     private ArrayList<String> text = new ArrayList<>();
     private int secsSyncTimeInterval = 5000;
     private float gridInterval = 5; // 5mm
-
+    private LinkedBlockingQueue<short[]> queue;
+    private int arraySize;
+    private float scaleThumbnail = 0.2f;
+    private float scaleDetail = 0.5f;
+    private int strokeWidthThumbnail = 1;
+    private int strokeWidthDetail = 2;
 
     //Used by view;
     private int mainViewWidth = 0;
@@ -66,14 +75,21 @@ public class ECGView extends View {
     private long lastTimeSecs = 0;
     private int pointNumUntilSecSync = 0;
     private ArrayList<int[]> dataToSubViewList = new ArrayList<>();
+    private boolean startFlag = false;
+    private boolean stopFlag = false;
+    private final int SLEEP_TIME = 1000;
+    private int sleepTime = 1000;
+    private static final String TAG = "ECGView";
 
+
+    Handler handler=new Handler();
 
     Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
             invalidate();
 
-            postDelayed(refreshRunnable, 1000 / fps);
+//            postDelayed(refreshRunnable, 1000 / fps);
 
         }
     };
@@ -82,37 +98,76 @@ public class ECGView extends View {
         @Override
         public void run() {
 
-            long currentTime = System.currentTimeMillis();
+            while (!stopFlag) {
+                long currentTime = System.currentTimeMillis();
 
-            long millisTimeInterval = currentTime - lastTimeMillis;
-            long secsTimeTimeInterval = currentTime - lastTimeSecs;
+                long millisTimeInterval = currentTime - lastTimeMillis;
 
+                //last time syc
+                long secsTimeTimeInterval = currentTime - lastTimeSecs;
 
-            if (secsTimeTimeInterval > secsSyncTimeInterval * 10) {
-                lastTimeMillis = currentTime;
-                for (Queue queue : channel) {
-                    queue.clear();
+                //if never draw, set last drawing time is current time. clear the channel.
+
+                if (secsTimeTimeInterval >= 1000) {
+                    lastTimeMillis = currentTime;
                 }
-                pointNumUntilSecSync = 0;
-                lastTimeSecs = currentTime;
-            } else if (secsTimeTimeInterval > secsSyncTimeInterval) {
-                lastTimeSecs = currentTime;
 
-                int drawPointNumThisInterval = (int) (secsSyncTimeInterval / 1000.0 * 250) - pointNumUntilSecSync;
+                int size = queue.size();
 
+                if (size > 25000) {
+                    sleepTime = SLEEP_TIME / 10;
+                }
 
-                pointNumUntilSecSync = 0;
+                if (size > 1000) {
+                    sleepTime = SLEEP_TIME / 2;
+                }
+
+                if (size < 500) {
+                    sleepTime = SLEEP_TIME;
+                }
+
+                if (size < 250) {
+                    sleepTime = SLEEP_TIME * 2;
+                }
+
+                if (size < 100) {
+                    sleepTime = SLEEP_TIME * 5;
+                }
+
+/*                if (secsTimeTimeInterval > secsSyncTimeInterval * 10) {
+                    lastTimeMillis = currentTime;
+
+                    queue.clear();
+
+                    pointNumUntilSecSync = 0;
+                    lastTimeSecs = currentTime;
+                } else if (secsTimeTimeInterval > secsSyncTimeInterval) {
+                    lastTimeSecs = currentTime;
+
+                    int drawPointNumThisInterval = (int) (secsSyncTimeInterval / 1000.0 * 250) - pointNumUntilSecSync;
+                    //todo throw drawPointNumThisInterval point.
+
+                    pointNumUntilSecSync = 0;
+                }*/
+
+                lastTimeMillis = currentTime;
+
+                if (millisTimeInterval < 1000) {
+                    int drawPointNumThisInterval = (int) (millisTimeInterval / ((float)sleepTime) * 250);
+                    drawLine(drawPointNumThisInterval);
+                    pointNumUntilSecSync += drawPointNumThisInterval;
+                }
+
+                try {
+                    Thread.sleep(sleepTime / fps);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    handler.post(refreshRunnable);
+                }
             }
 
-            lastTimeMillis = currentTime;
-
-            if (millisTimeInterval < 1000) {
-                int drawPointNumThisInterval = (int) (millisTimeInterval / 1000.0 * 250);
-                queueToArrayByNum(drawPointNumThisInterval);
-                pointNumUntilSecSync += drawPointNumThisInterval;
-            }
-
-            postDelayed(drawDataRunnable, 1000 / fps);
+           // handler.postDelayed(drawDataRunnable, 1000 / fps);
         }
     };
 
@@ -140,7 +195,7 @@ public class ECGView extends View {
         displayMetrics = new DisplayMetrics();
         ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         pixelPerMillimeter = (float)(displayMetrics.xdpi / 2.54 /10);
-        LogShower.custom("liyongzhi", "ECGView", "init", "pixelPerMillimeter = " + pixelPerMillimeter);
+
 
         scaleGestureDetector = new ScaleGestureDetector(context, new ScaleGestureDetector.OnScaleGestureListener() {
             @Override
@@ -148,7 +203,7 @@ public class ECGView extends View {
                 scaleFactor *= detector.getScaleFactor();
 //                LogShower.custom("liyongzhi", "ECGView", "onScale", "detector.getScaleFactor() = " + detector.getScaleFactor());
                 if (scaleFactor > 1.2) {
-                    LogShower.custom("liyongzhi", "ECGView", "onScale", "scaleFactor > 1.2");
+
                     if (isColumnSubViewNumSet && subViewNum > minSubViewNum && columnSubViewNum >= 1) {
                         if (subViewNum / columnSubViewNum < columnSubViewNum && columnSubViewNum > 1) {
                             subViewNum -= subViewNum / columnSubViewNum;
@@ -156,14 +211,14 @@ public class ECGView extends View {
                         } else {
                             subViewNum -= columnSubViewNum;
                         }
-                        LogShower.custom("liyongzhi", "ECGView", "onScale", "subViewNum = " + subViewNum);
+
                         subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
                     }
                     if (!isColumnSubViewNumSet && subViewNum > minSubViewNum) {
                         subViewNum--;
-                        LogShower.custom("liyongzhi", "ECGView", "onScale", "subViewNum = " + subViewNum);
+
                         subViewNumChanged();
                         invalidate();
                         scaleFactor = 1.0f;
@@ -240,13 +295,12 @@ public class ECGView extends View {
         } else {
             changeCertainSubViewLayout(thumbnailOrDetail);
         }
-
     }
 
 
     private void createSubView() {
         for (int i = 0; i < inputChannelNum; i++) {
-            ECGSubView subView = new ECGSubView(channel.get(i));
+            ECGSubView subView = new ECGSubView(drawPaperSpeed, drawPointSpeed, pixelPerMillimeter);
             if (text.get(i) != null) {
                 subView.setText(text.get(i));
             }
@@ -258,12 +312,13 @@ public class ECGView extends View {
         ECGSubView subView = subViewList.get(id);
         subView.setSubHeight(mainViewHeight);
         subView.setSubWidth(mainViewWidth);
-        subView.setPixelPerMillimeter(pixelPerMillimeter);
         subView.setGridInterval(gridInterval);
         subView.setDrawBackground(true);
         subView.setOffsetStartPoint(0,0);
-        int[] data = new int[(int) (subViewList.get(id).getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
-        subView.setData(data, 0);
+        subView.setScaling(scaleDetail);
+        subView.setStrokeWidth(strokeWidthDetail);
+        subView.setThumbnailMode(false);
+        short[] data = new short[(int) (subViewList.get(id).getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
 
     }
 
@@ -292,6 +347,9 @@ public class ECGView extends View {
             subview.setParentWidth(mainViewWidth);
             subview.setOffsetStartPoint(offsetStartPointX, offsetStartPointY);
             subview.setDrawBackground(false);
+            subview.setScaling(scaleThumbnail);
+            subview.setStrokeWidth(strokeWidthThumbnail);
+            subview.setThumbnailMode(true);
 /*            //get the precise pixel address of sub-view's height.
             if (i - currentPageStartIndex >= currentPageLeftSubViewNumber - tmp) {
                 subview.setSubHeight(mainViewHeight - offsetStartPointY);
@@ -315,8 +373,6 @@ public class ECGView extends View {
             } else {
                 subview.setSubHeight(mainViewHeight - thisLineOffsetStartPointY);
             }
-            int[] data = new int[(int) (subview.getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
-            subview.setData(data, 0);
         }
     }
 
@@ -420,36 +476,82 @@ public class ECGView extends View {
         subViewNumChanged();
     }
 
-    private void queueToArrayByNum(int num) {
-        int pointPerFresh = drawPointSpeed / fps;
+    public  short[][] transposeMatrix(short[][] matrix)
+    {
+        int m = matrix.length;
+        int n = matrix[0].length;
 
-        if (thumbnailOrDetail == -1) {
+        short[][] transposedMatrix = new short[n][m];
+
+        for(int x = 0; x < n; x++)
+        {
+            for(int y = 0; y < m; y++)
+            {
+                transposedMatrix[x][y] = matrix[y][x];
+            }
+        }
+
+        return transposedMatrix;
+    }
+
+    private void drawLine(int num) {
+        int pointPerFresh = drawPointSpeed / fps;
+        short[][] dataN = new short[num][inputChannelNum]; // n line data in the same time; short[data][line]
+        short[][] dataT;
+
+        try {
+
+            for (int i = 0; i < num; i++) {
+                dataN[i] = queue.take();
+
+            }
+
+            dataT = transposeMatrix(dataN);
+            Log.i(TAG, "drawLine: dataT = " + Arrays.toString(dataT));
+
+            for (int i = 0; i < inputChannelNum; i++) {
+                ECGSubView subView = subViewList.get(i);
+                short[] data = dataT[i];
+                subView.addData(data);
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+/*        if (thumbnailOrDetail == -1) {
             for (int i = 0; i < inputChannelNum; i++) {
                 Queue queue = channel.get(i);
                 ECGSubView subView = subViewList.get(i);
-                int[] data = subView.getData();
-                int endPoint = subView.getEndPoint();
+                short[] data = subView.getData();
+                int endPoint = subView.getNextStartPoint();
                 endPoint = endPoint + num >= data.length ? (endPoint + num) % data.length : endPoint + num;
                 subView.setData(data, endPoint);
             }
         } else {
             Queue queue = channel.get(thumbnailOrDetail);
             ECGSubView subView = subViewList.get(thumbnailOrDetail);
-            int[] data = subView.getData();
-            int endPoint = subView.getEndPoint();
+            short[] data = subView.getData();
+            int endPoint = subView.getNextStartPoint();
             endPoint = endPoint + num >= data.length ? (endPoint + num) % data.length : endPoint + num;
             subView.setData(data, endPoint);
-        }
+        }*/
     }
 
     public void start() {
 
-
-        if (subViewList != null && subViewList.size() == 0) {
-            createSubView();
+        if (!startFlag) {
+            startFlag = true;
+            if (subViewList != null && subViewList.size() == 0) {
+                createSubView();
+            }
+            new Thread(drawDataRunnable).start();
+//        post(refreshRunnable);
         }
-        post(drawDataRunnable);
-        post(refreshRunnable);
+    }
+
+    public void stop() {
+        stopFlag = true;
     }
 
 
@@ -463,13 +565,13 @@ public class ECGView extends View {
                 } else {
                     showThumbnail();
                 }
-                return true;
-
+                break;
         }
 //        scaleGestureDetector.onTouchEvent(event);
 
 
 //        LogShower.custom("liyongzhi", "ECGView", "onTouchEvent", "get into onTouchEvent");
+        invalidate();
         return true;
     }
 
@@ -491,10 +593,9 @@ public class ECGView extends View {
         this.isSubViewNumInited = true;
     }
 
-    public void setChannel(ArrayList<Queue> channel) {
-        this.channel = channel;
-        this.inputChannelNum = channel.size();
-
+    public void setChannel(LinkedBlockingQueue<short[]> queue) {
+        this.queue = queue;
+        queue.clear();
     }
 
     public void setText(ArrayList<String> text) {
@@ -553,5 +654,17 @@ public class ECGView extends View {
         this.aspectRatio = aspectRatio;
         this.isAspectRatioSet = true;
     }
+
+    public void setInputChannelNum(int inputChannelNum) {
+        this.inputChannelNum = inputChannelNum;
+    }
+
+
+    public void setDrawPaperSpeed(int drawPaperSpeed) {
+        this.drawPaperSpeed = drawPaperSpeed;
+    }
+
+
+
 }
 
