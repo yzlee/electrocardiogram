@@ -108,7 +108,7 @@ public class ECGSubView {
             }
 
             if (maxValue < subHeight / 5) {
-                scaling *= 0.8;
+                scaling *= 1.2;
             }
 
         }

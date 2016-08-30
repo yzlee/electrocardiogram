@@ -16,8 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import cc.liyongzhi.androidlogsaver.log.LogShower;
-
 /**
  * Created by lee on 7/7/16.
  */
@@ -507,7 +505,6 @@ public class ECGView extends View {
             }
 
             dataT = transposeMatrix(dataN);
-            Log.i(TAG, "drawLine: dataT = " + Arrays.toString(dataT));
 
             for (int i = 0; i < inputChannelNum; i++) {
                 ECGSubView subView = subViewList.get(i);
@@ -557,7 +554,6 @@ public class ECGView extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        LogShower.custom("liyongzhi", "ECGView", "onTouchEvent", "event.getPointerCount" + event.getPointerCount());
         switch (event.getAction()) {
             case MotionEvent.ACTION_UP:
                 if (thumbnailOrDetail == -1) {
