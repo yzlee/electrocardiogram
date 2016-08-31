@@ -3,6 +3,8 @@ package cc.liyongzhi.ecgview;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Handler;
 import android.text.LoginFilter;
 import android.util.AttributeSet;
@@ -187,6 +189,10 @@ public class ECGView extends View {
     }
 
     private void init(Context context) {
+
+        if (isInEditMode()) {
+            return;
+        }
 
         this.context = context;
         //get pixelPerMillimeter
@@ -439,21 +445,43 @@ public class ECGView extends View {
         isInitDefParam = true;
     }
 
-
+    Paint bgPaint = new Paint();
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        //Generate default parameter in the first time.
-        if (!isInitDefParam) {
-            autoAdjustDefParam();
-            subViewNumChanged();
-        }
+        if (isInEditMode()) {
 
-        if (thumbnailOrDetail == -1) {
-            drawCurrentPage(canvas);
+
+
+            bgPaint.setColor(Color.BLACK);
+            int column = 2;
+            int raw = 12;
+            float subViewWidth = getWidth()  / column ;
+            float subViewHeight = getHeight() / raw ;
+            for (int i = 0; i < column; i++) {
+                canvas.drawLine(i * subViewWidth, 0, i * subViewWidth, getHeight(), bgPaint);
+            }
+            canvas.drawLine(getWidth() - 1, 0, getWidth() - 1, getHeight(), bgPaint);
+
+            for (int i = 0; i < raw; i++) {
+                canvas.drawLine(0, i * subViewHeight, getWidth(), i * subViewHeight, bgPaint);
+            }
+            canvas.drawLine(0, getHeight() - 1, getWidth(), getHeight() - 1, bgPaint);
+
         } else {
-            drawDetail(canvas);
+
+            //Generate default parameter in the first time.
+            if (!isInitDefParam) {
+                autoAdjustDefParam();
+                subViewNumChanged();
+            }
+
+            if (thumbnailOrDetail == -1) {
+                drawCurrentPage(canvas);
+            } else {
+                drawDetail(canvas);
+            }
         }
     }
 
@@ -501,14 +529,15 @@ public class ECGView extends View {
 
             for (int i = 0; i < num; i++) {
                 dataN[i] = queue.take();
-
             }
 
             dataT = transposeMatrix(dataN);
+            Log.i(TAG, "drawLine: dataT = " + dataT.length + " " + dataT[0].length);
 
             for (int i = 0; i < inputChannelNum; i++) {
                 ECGSubView subView = subViewList.get(i);
                 short[] data = dataT[i];
+                Log.i(TAG, "drawLine: data = " + Arrays.toString(data));
                 subView.addData(data);
             }
 
@@ -572,10 +601,6 @@ public class ECGView extends View {
     }
 
 
-    @Override
-    public boolean isInEditMode() {
-        return true;
-    }
     @Override
     protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
         super.onSizeChanged(xNew, yNew, xOld, yOld);

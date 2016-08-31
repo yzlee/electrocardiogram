@@ -94,6 +94,7 @@ public class ECGSubView {
                 }
 
                 //thumbnail adjust screen
+
                 float heightFirst = dataForDraw[i] * scaling;
                 float heightNext = dataForDraw[i + (int)pointPerPixel] * scaling;
                 if (thumbnailMode && Math.abs(heightNext) > subHeight / 2) {
