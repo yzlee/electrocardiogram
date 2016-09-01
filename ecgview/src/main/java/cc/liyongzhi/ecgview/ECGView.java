@@ -485,6 +485,7 @@ public class ECGView extends View {
         }
     }
 
+
     private void showDetail(int x, int y) {
         for (int i = 0; i < subViewList.size(); i ++) {
             ECGSubView subView = subViewList.get(i);
@@ -568,7 +569,7 @@ public class ECGView extends View {
 
         if (!startFlag) {
             startFlag = true;
-            if (subViewList != null && subViewList.size() == 0) {
+            if (subViewList == null || subViewList.size() == 0) {
                 createSubView();
             }
             new Thread(drawDataRunnable).start();
@@ -580,13 +581,33 @@ public class ECGView extends View {
         stopFlag = true;
     }
 
+    private double countDistance(float oldX, float oldY, float x, float y) {
+        return Math.sqrt(Math.pow(oldX - x, 2) + Math.pow(oldY - y, 2));
+    }
+
+    float downX;
+    float downY;
+    float upX;
+    float upY;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
         switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                downX = event.getX();
+                downY = event.getY();
+                break;
             case MotionEvent.ACTION_UP:
+                upX = event.getX();
+                upY = event.getY();
+
+                if (countDistance(downX, downY, upX, upY) > 5) {
+                    break;
+                }
+
                 if (thumbnailOrDetail == -1) {
-                    showDetail((int) event.getX(), (int) event.getY());
+                    showDetail((int) upX, (int) upY);
                 } else {
                     showThumbnail();
                 }
