@@ -87,12 +87,10 @@ public class ECGSubView {
         if (dataForDraw != null) {
             //for performance
             if (thumbnailMode) {
-                everyNPointDraw = subWidth / 80 > 1 ? subWidth / 80 : 1;
+                everyNPointDraw = subWidth / 60 > 1 ? subWidth / 60 : 1;
             } else {
-                everyNPointDraw = subWidth / 160 > 1 ? subWidth / 160 : 1;
+                everyNPointDraw = subWidth / 300 > 1 ? subWidth / 300 : 1;
             }
-
-            Log.i(TAG, "draw: this.everyNpoint = " + everyNPointDraw);
 
             int offsetY = subHeight / 2;
             float maxValue = 0;
