@@ -322,8 +322,6 @@ public class ECGView extends View {
         subView.setScaling(scaleDetail);
         subView.setStrokeWidth(strokeWidthDetail);
         subView.setThumbnailMode(false);
-        short[] data = new short[(int) (subViewList.get(id).getSubWidth() / (pixelPerMillimeter * 25 / drawPointSpeed))];
-
     }
 
     private void changeSubViewLayout() {
@@ -533,12 +531,10 @@ public class ECGView extends View {
             }
 
             dataT = transposeMatrix(dataN);
-            Log.i(TAG, "drawLine: dataT = " + dataT.length + " " + dataT[0].length);
 
             for (int i = 0; i < inputChannelNum; i++) {
                 ECGSubView subView = subViewList.get(i);
                 short[] data = dataT[i];
-                Log.i(TAG, "drawLine: data = " + Arrays.toString(data));
                 subView.addData(data);
             }
 

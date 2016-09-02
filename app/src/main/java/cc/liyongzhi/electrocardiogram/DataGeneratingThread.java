@@ -24,10 +24,8 @@ public class DataGeneratingThread extends Thread {
         while (true) {
             short[] a = new short[12];
             short wave = (short) (Math.sin( Math.toRadians(j++)) * 50);
-            Log.i(TAG, "run: Math.toRadians(j++) = " + Math.toRadians(j++));
-            Log.i(TAG, "run: sin = " + Math.sin( Math.toRadians(j++)));
-            Log.i(TAG, "run: wave = " + wave );
-            
+            j = j + 2;
+
             for (int i = 0; i < 12; i++) {
                 a[i] = wave;
             }

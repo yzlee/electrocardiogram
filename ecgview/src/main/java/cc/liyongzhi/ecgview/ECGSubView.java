@@ -3,6 +3,7 @@ package cc.liyongzhi.ecgview;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 
 /**
  * Created by lee on 7/8/16.
@@ -35,8 +36,9 @@ public class ECGSubView {
     private int strokeWidth = 1;
     private boolean thumbnailMode = true;
     private float hScale = 2.0f; //horizontal scaling
+    private float everyNPointDraw = 1;
 
-
+    private static final String TAG = "ECGSubView";
 
     public ECGSubView(int drawPaperSpeed, int drawPointSpeed, float pixelPerMillimeter) {
         this.drawPointSpeed = drawPointSpeed;
@@ -83,20 +85,29 @@ public class ECGSubView {
 
         //draw wave
         if (dataForDraw != null) {
+            //for performance
+            if (thumbnailMode) {
+                everyNPointDraw = subWidth / 80 > 1 ? subWidth / 80 : 1;
+            } else {
+                everyNPointDraw = subWidth / 160 > 1 ? subWidth / 160 : 1;
+            }
+
+            Log.i(TAG, "draw: this.everyNpoint = " + everyNPointDraw);
+
             int offsetY = subHeight / 2;
             float maxValue = 0;
-            for (int i = 0; i < dataForDraw.length - pointPerPixel; i += pointPerPixel) {
+            for (int i = 0; i < dataForDraw.length - pointPerPixel * everyNPointDraw; i = i + (int)(pointPerPixel * everyNPointDraw)) {
 
                 int emptyLength = i - nextStartPoint;
 
-                if (emptyLength < 6 * pointPerPixel  && emptyLength > 0) {
+                if (emptyLength < 6 * pointPerPixel * everyNPointDraw  && emptyLength > 0) {
                     continue;
                 }
 
                 //thumbnail adjust screen
 
                 float heightFirst = dataForDraw[i] * scaling;
-                float heightNext = dataForDraw[i + (int)pointPerPixel] * scaling;
+                float heightNext = dataForDraw[i + (int)(pointPerPixel * everyNPointDraw)] * scaling;
                 if (thumbnailMode && Math.abs(heightNext) > subHeight / 2) {
                     scaling *= 0.9;
                     heightNext *= scaling;
@@ -105,7 +116,7 @@ public class ECGSubView {
                     heightNext = heightNext > 0 ? subHeight / 2 : -subHeight / 2;
                 }
                 maxValue = maxValue > heightNext ? maxValue : heightNext;
-                canvas.drawLine(step * i + offsetStartPointX, heightFirst + offsetStartPointY + offsetY, step * (i + pointPerPixel) + offsetStartPointX, heightNext + offsetStartPointY + offsetY, wavePaint);
+                canvas.drawLine(step * i + offsetStartPointX, heightFirst + offsetStartPointY + offsetY, step * (i + pointPerPixel * everyNPointDraw) + offsetStartPointX, heightNext + offsetStartPointY + offsetY, wavePaint);
             }
 
             if (maxValue < subHeight / 10) {
@@ -194,10 +205,12 @@ public class ECGSubView {
         } else {
             pointPerPixel = POINT_PER_PIXEL;
         }
+        this.thumbnailMode = thumbnailMode;
         setSubWidth(subWidth);
     }
 
     public void setSubWidth(int subWidth) {
+
         this.subWidth = subWidth; //pixel number of one page
         int totalPoint = (int)(subWidth * pointPerPixel);
         short[] newDataForDraw = new short[totalPoint];
