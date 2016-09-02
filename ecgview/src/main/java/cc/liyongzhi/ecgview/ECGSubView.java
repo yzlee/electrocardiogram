@@ -132,14 +132,21 @@ public class ECGSubView {
         textPaint.setColor(Color.BLACK);
         //text size
         float size = 12;
+        //text position y
+        float positionY = offsetStartPointY + subHeight / 5;
         size = subWidth / 18;
         if (size < 8) {
             size = 8;
-        } else if (size > 60) {
+            positionY = offsetStartPointY + subHeight / 2;
+        } else if(size < 16) {
+            positionY = offsetStartPointY + subHeight / 3;
+        }
+        else if (size > 60) {
             size = 60;
         }
         textPaint.setTextSize(size);
-        canvas.drawText(text, offsetStartPointX + subWidth / 8, offsetStartPointY + subHeight / 5, textPaint);
+
+        canvas.drawText(text, offsetStartPointX + subWidth / 8, positionY, textPaint);
     }
 
     /**
