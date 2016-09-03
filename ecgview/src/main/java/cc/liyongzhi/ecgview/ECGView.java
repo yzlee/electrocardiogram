@@ -565,6 +565,7 @@ public class ECGView extends View {
 
         if (!startFlag) {
             startFlag = true;
+            stopFlag = false;
             if (subViewList == null || subViewList.size() == 0) {
                 createSubView();
             }
