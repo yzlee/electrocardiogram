@@ -115,7 +115,7 @@ public class ECGView extends View {
                 int size = queue.size();
 
                 if (size > 25000) {
-                    sleepTime = SLEEP_TIME / 10;
+                    sleepTime = SLEEP_TIME / 100;
                 }
 
                 if (size > 1000) {
