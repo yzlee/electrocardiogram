@@ -94,6 +94,7 @@ public class ECGSubView {
 
             int offsetY = subHeight / 2;
             float maxValue = 0;
+            float maxValueReal = 0;
             for (int i = 0; i < dataForDraw.length - pointPerPixel * everyNPointDraw; i = i + (int)(pointPerPixel * everyNPointDraw)) {
 
                 int emptyLength = i - nextStartPoint;
@@ -103,7 +104,7 @@ public class ECGSubView {
                 }
 
                 //thumbnail adjust screen
-
+                maxValueReal = maxValueReal > Math.abs(dataForDraw[i]) ? maxValue : Math.abs(dataForDraw[i]);
                 float heightFirst = dataForDraw[i] * scaling;
                 float heightNext = dataForDraw[i + (int)(pointPerPixel * everyNPointDraw)] * scaling;
                 maxValue = maxValue > Math.abs(heightNext) ? maxValue : Math.abs(heightNext);
@@ -119,7 +120,7 @@ public class ECGSubView {
                 canvas.drawLine(step * i + offsetStartPointX, - heightFirst + offsetStartPointY + offsetY, step * (i + pointPerPixel * everyNPointDraw) + offsetStartPointX, - heightNext + offsetStartPointY + offsetY, wavePaint);
             }
 
-            if (maxValue < subHeight / 8 && maxValue > subHeight / 12) {
+            if (maxValue < subHeight / 8 && maxValue > subHeight / 12 && maxValueReal > subHeight / 10 && thumbnailMode) {
                 scaling *= 1.05;
             }
 
