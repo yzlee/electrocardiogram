@@ -124,6 +124,10 @@ public class ECGSubView {
                 scaling *= 1.05;
             }
 
+            if (thumbnailMode && maxValue < subHeight / 12 && maxValueReal > subHeight / 2) {
+                scaling = 0.5f;
+            }
+
         }
 
 /*        if (data != null) {
