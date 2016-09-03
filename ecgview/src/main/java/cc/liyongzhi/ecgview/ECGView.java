@@ -575,6 +575,7 @@ public class ECGView extends View {
 
     public void stop() {
         stopFlag = true;
+        startFlag = false;
     }
 
     private double countDistance(float oldX, float oldY, float x, float y) {
