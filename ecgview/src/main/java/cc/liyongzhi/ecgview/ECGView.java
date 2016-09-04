@@ -14,8 +14,10 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -25,6 +27,10 @@ public class ECGView extends View {
 
     public static final int MODE_DRAW_PER_POINT = 0;
     public static final int MODE_DRAW_FROM_QUEUE = 1;
+
+    public enum Order {
+        VerticalThenHorizontal, HorizontalThenVertical
+    }
 
     //Configuration by user
     private int subViewNum = 6; //Default sub-view number in one page.
@@ -50,6 +56,7 @@ public class ECGView extends View {
     private float scaleDetail = 0.5f;
     private int strokeWidthThumbnail = 1;
     private int strokeWidthDetail = 2;
+    private Order order = Order.VerticalThenHorizontal;
 
     //Used by view;
     private int mainViewWidth = 0;
@@ -520,15 +527,52 @@ public class ECGView extends View {
         return transposedMatrix;
     }
 
+    private short[] changeCoordinate(short[] input) {
+
+        short[] data = new short[input.length];
+
+        if (order == Order.VerticalThenHorizontal) {
+
+            for (int i = 0; i < data.length; i++) {
+                data[i] = input[i / columnSubViewNum + i % columnSubViewNum * (((data.length - 1) / columnSubViewNum) + 1)];
+            }
+
+        } else {
+            return input;
+        }
+
+        return data;
+    }
+
+    private String[] changeCoordinate(String[] input) {
+
+        String[] data = new String[input.length];
+
+        if (order == Order.VerticalThenHorizontal) {
+
+            for (int i = 0; i < data.length; i++) {
+                data[i] = input[i / columnSubViewNum + i % columnSubViewNum * (((data.length - 1) / columnSubViewNum) + 1)];
+            }
+
+        } else {
+            return input;
+        }
+
+        return data;
+    }
+
     private void drawLine(int num) {
+        if (num <= 0) return;
         int pointPerFresh = drawPointSpeed / fps;
         short[][] dataN = new short[num][inputChannelNum]; // n line data in the same time; short[data][line]
         short[][] dataT;
 
         try {
 
+
             for (int i = 0; i < num; i++) {
                 dataN[i] = queue.take();
+                dataN[i] = changeCoordinate(dataN[i]);
             }
 
             if (dataN.length == 0) return;
@@ -642,10 +686,11 @@ public class ECGView extends View {
     }
 
     public void setText(ArrayList<String> text) {
+        String[] t = (String[])text.toArray(new String[text.size()]);
+        text.clear();
+        Collections.addAll(text, changeCoordinate(t));
         this.text = text;
     }
-
-
 
     public void setZoomAllowed(boolean zoomAllowed) {
         isZoomAllowed = zoomAllowed;
@@ -707,7 +752,8 @@ public class ECGView extends View {
         this.drawPaperSpeed = drawPaperSpeed;
     }
 
-
-
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }
 
