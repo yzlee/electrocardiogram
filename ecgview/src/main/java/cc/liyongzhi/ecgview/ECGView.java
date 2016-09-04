@@ -150,10 +150,11 @@ public class ECGView extends View {
                     pointNumUntilSecSync = 0;
                 }*/
 
-                lastTimeMillis = currentTime;
 
-                if (millisTimeInterval < 1000) {
-                    int drawPointNumThisInterval = (int) (millisTimeInterval / ((float)sleepTime) * 250);
+
+                if (millisTimeInterval < 1000 && millisTimeInterval > ((float)sleepTime) / drawPointSpeed) {
+                    lastTimeMillis = currentTime;
+                    int drawPointNumThisInterval = (int) (millisTimeInterval / ((float)sleepTime) * drawPointSpeed);
                     drawLine(drawPointNumThisInterval);
                     pointNumUntilSecSync += drawPointNumThisInterval;
                 }
