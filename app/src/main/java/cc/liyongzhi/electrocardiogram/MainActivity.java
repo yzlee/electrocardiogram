@@ -31,6 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
         new DataGeneratingThread(queue).start();
 
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         view = (ECGView) findViewById(R.id.ecg_view);
         view.setSubViewNum(12);
         view.setColumnSubViewNum(2);
@@ -41,13 +48,18 @@ public class MainActivity extends AppCompatActivity {
         view.setInputChannelNum(12);
         view.setChannel(queue);
         view.start();
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        view.stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        view.stop();
+
         view = null;
     }
 

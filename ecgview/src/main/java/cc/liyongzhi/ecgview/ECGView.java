@@ -530,6 +530,8 @@ public class ECGView extends View {
                 dataN[i] = queue.take();
             }
 
+            if (dataN.length == 0) return;
+
             dataT = transposeMatrix(dataN);
 
             for (int i = 0; i < inputChannelNum; i++) {
