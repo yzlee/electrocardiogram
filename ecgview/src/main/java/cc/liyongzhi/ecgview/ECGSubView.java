@@ -256,7 +256,9 @@ public class ECGSubView {
     }*/
 
     public void addData(short[] data) {
-        nextStartPoint = addArrayToArray(dataForDraw, data, nextStartPoint);
+        if (dataForDraw != null) {
+            nextStartPoint = addArrayToArray(dataForDraw, data, nextStartPoint);
+        }
 
     }
 
