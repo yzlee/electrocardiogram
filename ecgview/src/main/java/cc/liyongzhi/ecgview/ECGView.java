@@ -755,5 +755,9 @@ public class ECGView extends View {
     public void setOrder(Order order) {
         this.order = order;
     }
+    
+    public void setScaleDetail(float scaleDetail) {
+        this.scaleDetail = scaleDetail;
+    }
 }
 
